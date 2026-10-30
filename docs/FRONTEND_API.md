@@ -61,9 +61,9 @@
 
 可能出现的运行状态：`queued`、`running`、`succeeded`、`completed_with_failures`、`failed`。
 
-## 3. v0.2.0 计划接口
+## 3. v0.2.0 参数化接口
 
-本节是第二版开发契约，尚未在 `v0.1.0` 中实现。字段调整必须同步修改本文档和后端测试。
+本节接口已在 `feature/parameterized-simulation` 分支实现，合并到 `develop` 后作为第二版前端联调接口。字段调整必须同步修改本文档和后端测试。
 
 ### 3.1 查询场景参数 Schema
 
@@ -180,14 +180,23 @@ POST /api/simulations/prepare
   },
   "trim": {
     "converged": true,
-    "profile": "twin_descent",
     "solver": "findop",
-    "model_version": "scene1-0.2.0",
-    "residual_norm": 0.0001,
-    "state": {},
-    "controls": {}
+    "model_version": "beaver_agent_env-runtime-trim-v1",
+    "message": "三组配平均满足约束",
+    "initial_state": {},
+    "profiles": {
+      "twin_descent": {},
+      "engine_out_descent": {},
+      "engine_out_climb": {}
+    }
   }
 }
+```
+
+配平记录可通过以下接口查询：
+
+```http
+GET /api/simulations/preparations/{preparation_id}
 ```
 
 失败响应使用 HTTP `422`（参数非法）或 `409`（参数合法但当前模型能力不支持/配平不收敛）：

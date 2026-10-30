@@ -34,14 +34,24 @@ class RunEvaluator:
         records: list[dict[str, Any]],
         prompt_version: str,
         prompt_hash: str,
+        runtime_context: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         steps = [item for item in records if item.get("kind") == "step"]
+        parameters = (runtime_context or {}).get("normalized_parameters", {})
+        profiles = (runtime_context or {}).get("trim", {}).get("profiles", {})
+        go_around_altitude = float(
+            parameters.get("go_around_altitude_ft", GO_AROUND_ALTITUDE_FT)
+        )
         gates = {
             "has_steps": bool(steps),
             "format_valid": self._format_valid(steps),
             "phase_order_valid": self._phase_order_valid(scene, steps),
-            "no_early_go_around": self._no_early_go_around(steps),
-            "control_direction_valid": self._control_direction_valid(steps),
+            "no_early_go_around": self._no_early_go_around(
+                steps, go_around_altitude
+            ),
+            "control_direction_valid": self._control_direction_valid(
+                steps, profiles
+            ),
             "state_safe": self._state_safe(scene, steps),
             "completed": self._completed(steps),
         }
@@ -108,7 +118,9 @@ class RunEvaluator:
         )
 
     @staticmethod
-    def _no_early_go_around(steps: list[dict[str, Any]]) -> bool:
+    def _no_early_go_around(
+        steps: list[dict[str, Any]], go_around_altitude: float
+    ) -> bool:
         for step in steps:
             state_before = step.get("state_before", {})
             result = step.get("result", {})
@@ -120,12 +132,14 @@ class RunEvaluator:
                 and state.get("flight_phase") == PHASE_GO_AROUND
             )
             if transitioned_to_go_around:
-                if float(state.get("altitude", 1e9)) > GO_AROUND_ALTITUDE_FT + 2.0:
+                if float(state.get("altitude", 1e9)) > go_around_altitude + 2.0:
                     return False
         return True
 
     @staticmethod
-    def _control_direction_valid(steps: list[dict[str, Any]]) -> bool:
+    def _control_direction_valid(
+        steps: list[dict[str, Any]], profiles: dict[str, Any]
+    ) -> bool:
         for step in steps:
             state = step.get("state_before", {})
             action = step.get("raw_action", {})
@@ -140,7 +154,7 @@ class RunEvaluator:
             except (TypeError, ValueError, KeyError):
                 return False
 
-            trim = _trim_for_phase(phase)
+            trim = _trim_for_phase(phase, profiles)
             # The protected model facts make these two wrong-direction cases
             # unambiguous enough for a deterministic regression gate.
             if yaw_rate > 0.03 and rudder < trim["rudder"] - 0.02:
@@ -177,7 +191,16 @@ class RunEvaluator:
 
     @staticmethod
     def _completed(steps: list[dict[str, Any]]) -> bool:
-        return bool(steps and steps[-1].get("result", {}).get("done"))
+        if not steps:
+            return False
+        result = steps[-1].get("result", {})
+        return bool(
+            result.get("done")
+            and (
+                result.get("event") == "GO_AROUND_SUCCESS"
+                or result.get("state", {}).get("flight_phase") == "SUCCESS"
+            )
+        )
 
     @staticmethod
     def _smoothness(steps: list[dict[str, Any]]) -> float:
@@ -232,12 +255,15 @@ class RunEvaluator:
         return sorted({mapping[name] for name, passed in gates.items() if not passed})
 
 
-def _trim_for_phase(phase: Optional[str]) -> dict[str, float]:
+def _trim_for_phase(
+    phase: Optional[str], profiles: Optional[dict[str, Any]] = None
+) -> dict[str, float]:
+    profiles = profiles or {}
     if phase == PHASE_ENGINE_OUT_DESCENT:
-        return ENGINE_OUT_DESCENT_TRIM
+        return profiles.get("engine_out_descent", ENGINE_OUT_DESCENT_TRIM)
     if phase == PHASE_GO_AROUND:
-        return ENGINE_OUT_CLIMB_TRIM
+        return profiles.get("engine_out_climb", ENGINE_OUT_CLIMB_TRIM)
     if phase == PHASE_TWIN_DESCENT:
-        return TWIN_DESCENT_TRIM
-    return TWIN_DESCENT_TRIM
+        return profiles.get("twin_descent", TWIN_DESCENT_TRIM)
+    return profiles.get("twin_descent", TWIN_DESCENT_TRIM)
 

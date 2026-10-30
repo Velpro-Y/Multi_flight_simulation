@@ -1,12 +1,12 @@
 # 场景：单发失效复飞
 
-完整实验流程：从 500 ft 双发稳定下降；300 ft 左发动机失效后继续单发下降；只有到达 200 ft 才开始单发复飞；最终爬升回 500 ft。
+完整实验流程：从 {{initial_altitude_ft}} ft 双发稳定下降；{{engine_failure_altitude_ft}} ft 左发动机失效后继续单发下降；只有到达 {{go_around_altitude_ft}} ft 才开始单发复飞；最终爬升到 {{target_altitude_ft}} ft。
 
 阶段判断必须以工具返回的 `flight_phase` 和 `event` 为准。
 
 ## TWIN_DESCENT
 
-- 目标：以约 -9.84 ft/s 从 500 ft 稳定下降到 300 ft。
+- 目标：从 {{initial_altitude_ft}} ft 稳定下降到 {{engine_failure_altitude_ft}} ft。
 - 使用双发下降配平附近的绝对控制量。
 - `left_engine_fail=false`。
 - 收到 `LEFT_ENGINE_FAILURE` 后立即切换到单发下降规则。
@@ -15,7 +15,7 @@
 
 - 左油门永久保持 0。
 - 使用单发下降配平附近的控制量。
-- 继续保持约 -9.84 ft/s 下降到 200 ft。
+- 继续稳定下降到 {{go_around_altitude_ft}} ft。
 - 本阶段明确禁止使用单发爬升配平，禁止提前复飞。
 - 只有收到 `GO_AROUND_INITIATED` 或 `flight_phase=GO_AROUND` 才能进入复飞阶段。
 

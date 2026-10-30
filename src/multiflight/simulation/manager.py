@@ -27,6 +27,7 @@ class SimulationManager:
         self._env: Optional[FlightEnv] = None
         self._active_run_id: Optional[str] = None
         self._scene_id: Optional[str] = None
+        self._configuration: Optional[dict[str, Any]] = None
         self._records: list[dict[str, Any]] = []
         self._progress_callback: Optional[ProgressCallback] = None
 
@@ -35,10 +36,12 @@ class SimulationManager:
         run_id: str,
         scene_id: str,
         progress_callback: Optional[ProgressCallback] = None,
+        configuration: Optional[dict[str, Any]] = None,
     ) -> None:
         with self._lock:
             self._active_run_id = run_id
             self._scene_id = scene_id
+            self._configuration = deepcopy(configuration)
             self._env = None
             self._records = []
             self._progress_callback = progress_callback
@@ -50,7 +53,10 @@ class SimulationManager:
     def reset(self) -> dict[str, Any]:
         with self._lock:
             self.ensure_manual_run()
-            self._env = FlightEnv(run_id=self._active_run_id or "manual")
+            self._env = FlightEnv(
+                run_id=self._active_run_id or "manual",
+                configuration=self._configuration,
+            )
             result = self._env.reset()
             self._records.append(
                 {
@@ -88,6 +94,11 @@ class SimulationManager:
             return {
                 "active_run_id": self._active_run_id,
                 "scene_id": self._scene_id,
+                "preparation_id": (
+                    self._configuration.get("preparation_id")
+                    if self._configuration
+                    else None
+                ),
                 "ready": self._env is not None,
                 "steps": sum(1 for item in self._records if item["kind"] == "step"),
                 "state": state,
@@ -102,6 +113,7 @@ class SimulationManager:
             self._progress_callback = None
             self._active_run_id = None
             self._scene_id = None
+            self._configuration = None
             self._env = None
 
     def _notify(self, result: dict[str, Any]) -> None:
