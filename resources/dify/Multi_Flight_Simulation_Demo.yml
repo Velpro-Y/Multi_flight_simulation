@@ -1,0 +1,123 @@
+app:
+  description: 多场景飞行仿真Demo决策Agent，场景提示词由后端自动传入。
+  icon: ✈️
+  icon_background: '#E7ECEF'
+  icon_type: emoji
+  mode: agent-chat
+  name: Multi_Flight_Simulation_Demo
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.20@850efe73fb62bbe7ab2229116086596596297a77174fb86f73e1363b99a24116
+    version: null
+kind: app
+model_config:
+  agent_mode:
+    enabled: true
+    max_iteration: 99
+    prompt: null
+    strategy: function_call
+    tools:
+    - enabled: true
+      isDeleted: false
+      notAuthor: false
+      provider_id: 24dc0c5f-f8b1-497d-9117-a8b0f03dec9f
+      provider_name: 6DOF_tool
+      provider_type: api
+      tool_label: reset_simulation
+      tool_name: reset_simulation
+      tool_parameters: {}
+      type: api
+    - enabled: true
+      isDeleted: false
+      notAuthor: false
+      provider_id: 24dc0c5f-f8b1-497d-9117-a8b0f03dec9f
+      provider_name: 6DOF_tool
+      provider_type: api
+      tool_label: step_simulation
+      tool_name: step_simulation
+      tool_parameters:
+        aileron: null
+        elevator: null
+        rudder: null
+        throttle_left: null
+        throttle_right: null
+      type: api
+  annotation_reply:
+    enabled: false
+  chat_prompt_config:
+    prompt:
+    - role: system
+      text: ''
+  completion_prompt_config:
+    conversation_histories_role:
+      assistant_prefix: ''
+      user_prefix: ''
+    prompt:
+      text: ''
+  dataset_configs:
+    datasets:
+      datasets: []
+    retrieval_model: multiple
+    top_k: 4
+  dataset_query_variable: ''
+  external_data_tools: []
+  file_upload:
+    allowed_file_extensions: []
+    allowed_file_types: []
+    allowed_file_upload_methods: []
+    enabled: false
+    image:
+      detail: high
+      enabled: false
+      number_limits: 0
+      transfer_methods: []
+    number_limits: 0
+  model:
+    completion_params:
+      stop: []
+      thinking: false
+    mode: chat
+    name: deepseek-v4-flash
+    provider: langgenius/deepseek/deepseek
+  more_like_this:
+    enabled: false
+  opening_statement: ''
+  pre_prompt: |-
+    你是 Multi Flight Simulation Demo 的飞行决策 Agent。
+
+    下方“场景提示词”由本地后端根据用户选择的场景和已发布版本自动生成。你必须严格执行其中的阶段逻辑、模型事实、安全约束和工具格式，不得要求用户重新输入提示词。
+
+    <scene_prompt>
+    {{scene_prompt}}
+    </scene_prompt>
+
+    收到开始实验的请求后必须先调用 reset_simulation，然后连续调用 step_simulation，直到工具返回 done=true 或明确错误。不要在工具尚未返回成功时自行结束实验。
+  prompt_type: simple
+  retriever_resource:
+    enabled: true
+  sensitive_word_avoidance:
+    config: {}
+    enabled: false
+    type: ''
+  speech_to_text:
+    enabled: false
+  suggested_questions: []
+  suggested_questions_after_answer:
+    enabled: false
+  text_to_speech:
+    enabled: false
+    language: ''
+    voice: ''
+  user_input_form:
+  - paragraph:
+      default: ''
+      label: 场景提示词
+      max_length: 100000
+      options: []
+      required: true
+      variable: scene_prompt
+version: 0.6.0
+

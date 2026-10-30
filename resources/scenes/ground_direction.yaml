@@ -1,0 +1,18 @@
+scene_id: ground_direction
+name: 地面方向控制
+version: 0.1.0
+status: planned
+description: 地面滑跑方向控制场景，待地面接触、轮胎侧向力与转向模块完成后启用。
+unavailable_reason: 地面方向控制动力学和转向执行机构尚未迁移实现。
+initialization:
+  altitude_ft: 0.0
+  trim_profile: ground_direction_planned
+phases: []
+observation_fields: []
+action_fields: []
+protected_prompt_blocks:
+  - base_role
+optimizable_prompt_blocks: []
+safety:
+  max_steps: 1
+expected_phase_order: []

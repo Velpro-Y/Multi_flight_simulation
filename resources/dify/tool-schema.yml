@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: Multi Flight Simulation Tool
+  version: 0.1.0
+  description: 供Multi_Flight_Simulation_Demo Agent重置和单步执行本地6DOF仿真。
+servers:
+  - url: http://host.docker.internal:8000
+paths:
+  /reset:
+    post:
+      operationId: reset_simulation
+      summary: 重置飞行仿真
+      description: 开始每次实验时必须先调用一次，返回初始状态。
+      responses:
+        "200":
+          description: 初始状态
+  /step:
+    post:
+      operationId: step_simulation
+      summary: 下发控制指令并执行两秒仿真
+      description: 每次提交完整的五个控制量并推进2秒仿真，返回最新状态、事件和完成标志。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                aileron:
+                  type: string
+                  description: 副翼绝对控制量，-1到1，例如"0.00203"。
+                elevator:
+                  type: string
+                  description: 升降舵绝对控制量，-1到1，例如"-0.01097"。
+                rudder:
+                  type: string
+                  description: 方向舵绝对控制量，-1到1，例如"-0.03744"。
+                throttle_left:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                throttle_right:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+              required:
+                - aileron
+                - elevator
+                - rudder
+                - throttle_left
+                - throttle_right
+      responses:
+        "200":
+          description: 单步仿真结果
+  /status:
+    get:
+      operationId: get_simulation_status
+      summary: 获取当前仿真状态
+      responses:
+        "200":
+          description: 当前状态
+

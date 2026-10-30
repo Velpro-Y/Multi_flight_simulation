@@ -1,0 +1,59 @@
+scene_id: engine_failure
+name: 单发失效复飞
+version: 1.0.0
+status: enabled
+description: 500 ft双发下降，300 ft左发失效，200 ft开始单发复飞并返回500 ft。
+initialization:
+  altitude_ft: 500.0
+  trim_profile: twin_descent
+phases:
+  - id: TWIN_DESCENT
+    description: 500至300 ft双发稳定下降
+    transition: altitude <= 300
+  - id: ENGINE_OUT_DESCENT
+    description: 300至200 ft左发失效稳定下降
+    transition: altitude <= 200
+  - id: GO_AROUND
+    description: 200 ft后单发复飞
+    success: altitude >= 500
+  - id: SUCCESS
+    description: 单发复飞完成
+observation_fields:
+  - time
+  - altitude
+  - airspeed
+  - vertical_speed
+  - roll
+  - pitch
+  - yaw
+  - roll_rate
+  - pitch_rate
+  - yaw_rate
+  - left_engine_fail
+  - flight_phase
+action_fields:
+  - aileron
+  - elevator
+  - rudder
+  - throttle_left
+  - throttle_right
+protected_prompt_blocks:
+  - base_role
+  - model_facts
+  - tool_contract
+optimizable_prompt_blocks:
+  - scene_policy
+  - decision_checklist
+safety:
+  min_airspeed_ft_s: 120.0
+  max_airspeed_ft_s: 190.0
+  max_abs_roll_rad: 0.35
+  min_pitch_rad: -0.10
+  max_pitch_rad: 0.35
+  max_steps: 150
+expected_phase_order:
+  - TWIN_DESCENT
+  - ENGINE_OUT_DESCENT
+  - GO_AROUND
+  - SUCCESS
+

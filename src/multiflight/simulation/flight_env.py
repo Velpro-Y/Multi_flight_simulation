@@ -1,0 +1,521 @@
+"""
+=========================================================
+Flight Environment
+
+负责：
+
+1. reset()
+2. step()
+3. get_state()
+
+=========================================================
+"""
+
+import os
+import logging
+
+from ..settings import *
+from .matlab_engine import get_engine
+
+import csv
+
+
+logger = logging.getLogger(__name__)
+
+
+class FlightEnv:
+
+    def __init__(self, run_id: str = "manual"):
+
+        self.eng = get_engine()
+
+        self.model = MODEL_NAME
+        self.state_file = str(STATE_FILE)
+        self.time = 0
+        self.current_altitude = DEFAULT_STATE["AltitudeMSL"]
+        self.last_altitude = DEFAULT_STATE["AltitudeMSL"]
+        self.target_altitude = TARGET_ALTITUDE_FT
+        self.left_engine_fail = False
+        self.flight_phase = PHASE_TWIN_DESCENT
+        self.go_around_time = 0.0
+        self._reset_single_engine_stabilizer(ENGINE_OUT_DESCENT_TRIM)
+        self.run_id = run_id
+        self.log_file = LOG_DIR / f"{run_id}_telemetry.csv"
+
+
+        # 创建目录
+        # STATE_DIR.mkdir(exist_ok=True)
+        LOG_DIR.mkdir(exist_ok=True)
+
+    # =====================================================
+    # Reset
+    # =====================================================
+
+    def reset(self):
+
+        logger.info("Reset Flight Environment")
+
+        self.time = 0
+        self.last_altitude = DEFAULT_STATE["AltitudeMSL"]
+        self.current_altitude = DEFAULT_STATE["AltitudeMSL"]
+        self.left_engine_fail = False
+        self.flight_phase = PHASE_TWIN_DESCENT
+        self.go_around_time = 0.0
+        self._reset_single_engine_stabilizer(ENGINE_OUT_DESCENT_TRIM)
+
+        # 初始化/清空历史日志并写入表头
+        with open(self.log_file, mode="w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "time", "altitude", "airspeed", "vertical_speed", "roll",
+                "pitch", "roll_rate", "pitch_rate", "yaw_rate", "event",
+                "flight_phase",
+                "aileron", "elevator", "rudder", "throttle_left",
+                "throttle_right"
+            ])
+
+        logger.info(f"Current Working Directory: {os.getcwd()}")
+        logger.info(f"State File: {self.state_file}")
+        if os.path.exists(self.state_file):
+            os.remove(self.state_file)
+
+        # 清除上一轮 Simulink 状态
+        self.eng.eval("""
+                clear xFinal simIn simOut;
+                """, nargout=0)
+
+        logger.info("Environment Ready")
+
+        initial_state = self.get_state()
+
+        return {
+            "done": False,
+            "event": "RESET",
+            "instruction": (
+                "Aircraft initialized successfully. Maintain twin-engine "
+                "descent to 300 ft."
+            ),
+            "state": initial_state
+        }
+    # =====================================================
+    # Step
+    # =====================================================
+
+    def step(self, action: dict):
+
+        logger.info(f"Receive Action : {action}")
+
+        event = "NORMAL"
+        instruction = "Maintain stable descent."
+
+        # -------------------------
+        #  控制限幅与左发强制切断
+        # -------------------------
+        aileron = max(ACTION_LIMIT["aileron"][0], min(ACTION_LIMIT["aileron"][1], action["aileron"]))
+        elevator = max(ACTION_LIMIT["elevator"][0], min(ACTION_LIMIT["elevator"][1], action["elevator"]))
+        rudder = max(ACTION_LIMIT["rudder"][0], min(ACTION_LIMIT["rudder"][1], action["rudder"]))
+
+        # 如果左发失效，强制覆盖左油门为 0.0，否则使用传入动作
+        if self.left_engine_fail:
+            throttle_left = 0.0
+        else:
+            throttle_left = max(ACTION_LIMIT["throttle"][0], min(ACTION_LIMIT["throttle"][1], action["throttle_left"]))
+
+        throttle_right = max(ACTION_LIMIT["throttle"][0], min(ACTION_LIMIT["throttle"][1], action["throttle_right"]))
+
+        # 左发失效后由低层增稳器接管。300--200 ft 使用单发下降配平；
+        # 到 200 ft 后才在 6 s 内平滑过渡到单发爬升配平。
+        engine_out_active_at_step_start = (
+            self.flight_phase in {PHASE_ENGINE_OUT_DESCENT, PHASE_GO_AROUND}
+        )
+        go_around_active_at_step_start = self.flight_phase == PHASE_GO_AROUND
+        if engine_out_active_at_step_start:
+            state_before_step = self.get_state()
+            stabilized = self._single_engine_stabilizer(
+                state_before_step,
+                go_around=go_around_active_at_step_start,
+            )
+            aileron = stabilized["aileron"]
+            elevator = stabilized["elevator"]
+            rudder = stabilized["rudder"]
+            throttle_left = 0.0
+            throttle_right = stabilized["throttle_right"]
+            logger.info(f"Single-engine stabilizer applied: {stabilized}")
+
+        # -------------------------
+        # 左发失效
+        # -------------------------
+        if engine_out_active_at_step_start:
+            throttle_left = 0.0
+
+        # -------------------------
+        # 1. 计算这一步的起始时间和停止时间
+        # -------------------------
+        start_time = self.time
+        next_stop_time = self.time + STEP_TIME
+
+        # -------------------------
+        # 2. 核心修复代码：注入控制量 + 严格指定仿真时间区间 [start_time, next_stop_time]
+        # -------------------------
+        self.eng.workspace['AileronCmd'] = float(aileron)
+        self.eng.workspace['ElevatorCmd'] = float(elevator)
+        self.eng.workspace['RudderCmd'] = float(rudder)
+        self.eng.workspace['Throttle_Left'] = float(throttle_left)
+        self.eng.workspace['Throttle_Right'] = float(throttle_right)
+
+        sim_prep_cmds = (
+            f"simIn = Simulink.SimulationInput('{self.model}'); "
+            f"simIn = simIn.setModelParameter('StartTime', '{start_time}'); "  # 👈 必须指定 StartTime!
+            f"simIn = simIn.setModelParameter('StopTime', '{next_stop_time}'); "
+            f"simIn = simIn.setVariable('AileronCmd', {float(aileron)}); "
+            f"simIn = simIn.setVariable('ElevatorCmd', {float(elevator)}); "
+            f"simIn = simIn.setVariable('RudderCmd', {float(rudder)}); "
+            f"simIn = simIn.setVariable('Throttle_Left', {float(throttle_left)}); "
+            f"simIn = simIn.setVariable('Throttle_Right', {float(throttle_right)}); "
+        )
+        self.eng.eval(sim_prep_cmds, nargout=0)
+
+        # -------------------------
+        # 3. 如果存在上一时刻状态，载入 xFinal 作为当前 step 的 InitialState
+        # -------------------------
+        if os.path.exists(self.state_file):
+            self.eng.eval(
+                f"load('{self.state_file}', 'xFinal'); "
+                # f"simIn = simIn.setModelParameter('LoadInitialState', 'on'); "  # 👈 强制开启标志位
+                f"simIn = simIn.setInitialState(xFinal);",
+                nargout=0
+            )
+
+        self.last_altitude = self.current_altitude
+        # -------------------------
+        # 4. 执行单步仿真并保存最新的 xFinal 状态
+        # -------------------------
+        sim_run_cmds = (
+            "simOut = sim(simIn); "
+            "xFinal = simOut.xFinal; "
+            f"save('{self.state_file}', 'xFinal');"
+        )
+        self.eng.eval(sim_run_cmds, nargout=0)
+
+        # -------------------------
+        # 5. 仿真成功后，Python 侧时间戳跟随累计
+        # -------------------------
+        self.time = next_stop_time
+        if go_around_active_at_step_start:
+            self.go_around_time += STEP_TIME
+
+        state = self.get_state()
+        self.current_altitude = state["altitude"]
+
+        # 阶段 1 -> 2：300 ft 左发失效，但继续稳定下降。
+        if (
+            self.flight_phase == PHASE_TWIN_DESCENT
+            and state["altitude"] <= ENGINE_FAILURE_ALTITUDE_FT
+        ):
+            self.left_engine_fail = True
+            self.flight_phase = PHASE_ENGINE_OUT_DESCENT
+            self.go_around_time = 0.0
+            self._reset_single_engine_stabilizer(ENGINE_OUT_DESCENT_TRIM)
+            event = "LEFT_ENGINE_FAILURE"
+            instruction = (
+                "LEFT ENGINE FAILURE at 300 ft. Keep throttle_left "
+                "at 0.0 and continue a stabilized single-engine descent to "
+                "200 ft; do not initiate the go-around yet."
+            )
+
+        # 阶段 2 -> 3：200 ft 才发出复飞指令并启动平滑调度。
+        elif (
+            self.flight_phase == PHASE_ENGINE_OUT_DESCENT
+            and state["altitude"] <= GO_AROUND_ALTITUDE_FT
+        ):
+            self.flight_phase = PHASE_GO_AROUND
+            self.go_around_time = 0.0
+            event = "GO_AROUND_INITIATED"
+            instruction = (
+                "GO-AROUND initiated at 200 ft. The stabilizer will "
+                "blend from engine-out descent trim to validated single-engine "
+                "climb trim over 6 seconds."
+            )
+        elif self.flight_phase == PHASE_ENGINE_OUT_DESCENT:
+            event = "SINGLE_ENGINE_DESCENT"
+            instruction = (
+                "Continue stabilized single-engine descent at about -9.84 ft/s "
+                "towards 200 ft."
+            )
+        elif self.flight_phase == PHASE_GO_AROUND:
+            event = "SINGLE_ENGINE_GO_AROUND"
+            instruction = (
+                "Executing single-engine go-around. Do not fight the internal "
+                "rate-feedback stabilizer; climb steadily towards 500 ft."
+            )
+
+        # -------------------------
+        # 6. 完成判定与最终状态
+        # -------------------------
+        state = self.get_state()
+        done = (
+            self.flight_phase == PHASE_GO_AROUND
+            and state["altitude"] >= self.target_altitude
+        )
+        if done:
+            self.flight_phase = PHASE_SUCCESS
+            state["flight_phase"] = PHASE_SUCCESS
+            event = "GO_AROUND_SUCCESS"
+            instruction = (
+                "Go-around successful! Target altitude reached on single engine."
+            )
+
+        # -------------------------
+        # 7. 记录本步最终事件和阶段
+        # -------------------------
+        try:
+            with open(self.log_file, mode="a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    round(self.time, 2),
+                    round(state["altitude"], 2),
+                    round(state["airspeed"], 2),
+                    round(state["vertical_speed"], 2),
+                    round(state["roll"], 5),
+                    round(state["pitch"], 5),
+                    round(state["roll_rate"], 5),
+                    round(state["pitch_rate"], 5),
+                    round(state["yaw_rate"], 5),
+                    event,
+                    state["flight_phase"],
+                    round(aileron, 6),
+                    round(elevator, 6),
+                    round(rudder, 6),
+                    round(throttle_left, 6),
+                    round(throttle_right, 6)
+                ])
+        except Exception as e:
+            logger.error(f"Failed to write telemetry log: {e}")
+
+        return {
+            "done": done,
+            "event": event,
+            "instruction": instruction,
+            "state": state,
+            "applied_action": {
+                "aileron": float(aileron),
+                "elevator": float(elevator),
+                "rudder": float(rudder),
+                "throttle_left": float(throttle_left),
+                "throttle_right": float(throttle_right),
+            },
+        }
+
+    # =====================================================
+    # 单发低层增稳器
+    # =====================================================
+
+    @staticmethod
+    def _clamp(value, lower, upper):
+        return min(max(value, lower), upper)
+
+    def _reset_single_engine_stabilizer(self, trim):
+        self._se_previous_aileron = trim["aileron"]
+        self._se_previous_elevator = trim["elevator"]
+        self._se_previous_rudder = trim["rudder"]
+        self._se_previous_throttle = trim["throttle_right"]
+
+    @staticmethod
+    def _interpolate_trim(start_trim, end_trim, blend):
+        keys = (
+            "vertical_speed", "airspeed", "roll", "pitch", "aileron",
+            "elevator", "rudder", "throttle_right",
+        )
+        return {
+            key: start_trim[key] + blend * (end_trim[key] - start_trim[key])
+            for key in keys
+        }
+
+    def _single_engine_stabilizer(self, state, go_around=False):
+        """Return rate-limited single-engine controls for the current state.
+
+        The control signs and the lateral control-effectiveness matrix were
+        measured directly in Simulink. Before 200 ft the controller holds the
+        single-engine descent trim. After the go-around event, every target and
+        trim center is blended to the climb operating point over six seconds.
+        """
+        blend = 0.0
+        if go_around:
+            blend = self._clamp(
+                self.go_around_time / GO_AROUND_TRANSITION_TIME_S,
+                0.0,
+                1.0,
+            )
+        scheduled = self._interpolate_trim(
+            ENGINE_OUT_DESCENT_TRIM,
+            ENGINE_OUT_CLIMB_TRIM,
+            blend,
+        )
+        target_roll = scheduled["roll"]
+        target_pitch_nominal = scheduled["pitch"]
+        target_vertical_speed = scheduled["vertical_speed"]
+        target_airspeed = scheduled["airspeed"]
+
+        # Local measured one-second control effectiveness:
+        # [dp] = [-0.923  -1.033] [d_aileron]
+        # [dr]   [ 0.543  -1.796] [d_rudder ]
+        roll_error = state["roll"] - target_roll
+        p_command = self._clamp(-1.20 * roll_error, -0.12, 0.12)
+        delta_p = 1.40 * (p_command - state["roll_rate"])
+        delta_r = 1.40 * (0.0 - state["yaw_rate"])
+        delta_aileron = (-1.7955 * delta_p + 1.033 * delta_r) / 2.217
+        delta_rudder = (-0.5425 * delta_p - 0.923 * delta_r) / 2.217
+
+        raw_aileron = self._clamp(
+            scheduled["aileron"] + delta_aileron, -0.25, 0.25
+        )
+        raw_rudder = self._clamp(
+            scheduled["rudder"] + delta_rudder, -0.50, 0.15
+        )
+        aileron = self._clamp(
+            raw_aileron,
+            self._se_previous_aileron - 0.04,
+            self._se_previous_aileron + 0.04,
+        )
+        rudder = self._clamp(
+            raw_rudder,
+            self._se_previous_rudder - 0.05,
+            self._se_previous_rudder + 0.05,
+        )
+
+        target_pitch = (
+            target_pitch_nominal
+            + (0.025 / MPS_TO_FPS)
+            * (target_vertical_speed - state["vertical_speed"])
+            + (0.010 / MPS_TO_FPS)
+            * (target_airspeed - state["airspeed"])
+        )
+        target_pitch = self._clamp(target_pitch, 0.04, 0.21)
+        q_command = self._clamp(
+            0.65 * (target_pitch - state["pitch"]), -0.08, 0.08
+        )
+        raw_elevator = self._clamp(
+            scheduled["elevator"]
+            - 0.34 * (q_command - state["pitch_rate"]),
+            -0.05,
+            0.03,
+        )
+        elevator = self._clamp(
+            raw_elevator,
+            self._se_previous_elevator - 0.012,
+            self._se_previous_elevator + 0.012,
+        )
+
+        raw_throttle = self._clamp(
+            scheduled["throttle_right"]
+            + (0.020 / MPS_TO_FPS)
+            * (target_airspeed - state["airspeed"])
+            + (0.012 / MPS_TO_FPS)
+            * (target_vertical_speed - state["vertical_speed"]),
+            0.12,
+            0.78,
+        )
+        throttle_right = self._clamp(
+            raw_throttle,
+            self._se_previous_throttle - 0.06,
+            self._se_previous_throttle + 0.06,
+        )
+
+        self._se_previous_aileron = aileron
+        self._se_previous_elevator = elevator
+        self._se_previous_rudder = rudder
+        self._se_previous_throttle = throttle_right
+
+        return {
+            "aileron": aileron,
+            "elevator": elevator,
+            "rudder": rudder,
+            "throttle_left": 0.0,
+            "throttle_right": throttle_right,
+            "trim_blend": blend,
+            "target_roll": target_roll,
+            "target_pitch": target_pitch_nominal,
+            "target_vertical_speed": target_vertical_speed,
+        }
+
+    # =====================================================
+    # 获取飞机状态
+    # =====================================================
+
+    def get_state(self):
+        # 1. 检查 simOut 是否存在
+        is_exist = self.eng.eval("exist('simOut', 'var')", nargout=1)
+
+        # 预定义一套完整的默认/初始状态字典（防止 KeyError）
+        default_state = {
+            "status": "reset",
+            "time": self.time,
+            "altitude": TARGET_ALTITUDE_FT,
+            "airspeed": TWIN_DESCENT_TRIM["airspeed"],
+            "vertical_speed": TWIN_DESCENT_TRIM["vertical_speed"],
+            "roll": TWIN_DESCENT_TRIM["roll"],
+            "pitch": TWIN_DESCENT_TRIM["pitch"],
+            "yaw": 0.0,
+            "roll_rate": 0.0,
+            "pitch_rate": 0.0,
+            "yaw_rate": 0.0,
+            "left_engine_fail": self.left_engine_fail,
+            "flight_phase": self.flight_phase,
+        }
+
+        if is_exist == 0:
+            self.last_altitude = DEFAULT_STATE["AltitudeMSL"]  # 恢复初始高度记录
+            return default_state
+        ze = float(self.eng.eval("simOut.Ze.Data(end)"))
+
+        u = float(self.eng.eval("simOut.u.Data(end)"))
+        v = float(self.eng.eval("simOut.v.Data(end)"))
+        w = float(self.eng.eval("simOut.w.Data(end)"))
+
+        phi = float(self.eng.eval("simOut.phi.Data(end)"))
+        theta = float(self.eng.eval("simOut.theta.Data(end)"))
+        psi = float(self.eng.eval("simOut.psi.Data(end)"))
+
+        p = float(self.eng.eval("simOut.p.Data(end)"))
+        q = float(self.eng.eval("simOut.q.Data(end)"))
+        r = float(self.eng.eval("simOut.r.Data(end)"))
+
+        altitude = -ze * M_TO_FT
+
+        airspeed = ((u ** 2 + v ** 2 + w ** 2) ** 0.5) * MPS_TO_FPS
+        actual_vertical_speed = (altitude - self.last_altitude) / STEP_TIME
+        logger.info(f"Actual vertical speed: {actual_vertical_speed}")
+        return {
+
+            "time": self.time,
+
+            "altitude": altitude,
+
+            "airspeed": airspeed,
+
+            "vertical_speed": actual_vertical_speed,
+
+            "roll": phi,
+
+            "pitch": theta,
+
+            "yaw": psi,
+
+            "roll_rate": p,
+
+            "pitch_rate": q,
+
+            "yaw_rate": r,
+
+            "left_engine_fail": self.left_engine_fail,
+
+            "flight_phase": self.flight_phase,
+        }
+
+    # =====================================================
+    # 关闭环境
+    # =====================================================
+
+    def close(self):
+
+        logger.info("Flight Environment Closed")

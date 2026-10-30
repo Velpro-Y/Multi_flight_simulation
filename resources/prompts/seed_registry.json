@@ -1,0 +1,17 @@
+{
+  "engine_failure": {
+    "published": "1.0.0",
+    "versions": {
+      "1.0.0": {
+        "version": "1.0.0",
+        "status": "published",
+        "name": "baseline",
+        "description": "迁移后的单发失效复飞基线提示词",
+        "addendum": "",
+        "created_from": null,
+        "regression_report": null
+      }
+    }
+  }
+}
+
