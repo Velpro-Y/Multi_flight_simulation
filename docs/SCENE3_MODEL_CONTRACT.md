@@ -1,31 +1,45 @@
-# 场景三模型接口与交付规范
+# 场景三模型扩展与交付规范
 
-## 1. 场景定义
+## 1. 唯一任务
 
-场景三用于验证飞机在地面滑跑阶段的方向控制能力。本版本关注：
+模型负责人只负责扩展本项目内的 Simulink 模型，使模型能够支持场景三“地面方向控制”。
 
-- 地面接触和轮胎侧向力。
-- 前轮转向或经确认的等效转向机构。
-- 方向舵对地面方向控制的作用。
-- 航向误差、横向偏差和偏航状态输出。
-- 风场接口。
+他不负责：
 
-本版本不实现差动刹车闭环控制。`brake_left`、`brake_right` 字段为兼容后续版本而保留，模型必须明确返回其未启用状态，不能静默当作有效控制。
+- 场景一参数化或动态配平。
+- Python、FastAPI、Dify 和提示词代码。
+- 系统级 reset/step 接口封装。
+- 前端接口和参数 Schema。
+- 场景二刹车模块、差动刹车、刹车效率、能量或 VMCG 指标。
+- 与场景三无关的公共模型能力或风场扩展。
 
-## 2. 目录与文件交付
+上述内容由后端与算法负责人完成或在后续版本处理。
+
+## 2. 场景三需要的模型能力
+
+场景三用于验证飞机在地面滑跑阶段的方向控制。模型扩展至少需要：
+
+1. 可靠的地面接触状态。
+2. 能产生合理横向响应的轮胎侧向力。
+3. 前轮转向或经过说明的等效地面转向执行机构。
+4. 方向舵输入保留，并能体现其在当前速度下的实际作用。
+5. 能输出飞机地面位置、地速、航向和偏航运动状态。
+
+本任务不要求实现地面减速和差动刹车。后端可以预留刹车字段，但模型负责人不需要为此增加制动力模块。
+
+## 3. 交付文件
 
 模型负责人在 `feature/scene3-model` 分支至少交付：
 
 ```text
 simulink/
 ├── ground_direction_env.slx
-├── ground_direction_reset.m
-├── ground_direction_step.m
-├── run_ground_direction_smoke_test.m
-└── README_ground_direction.md
+├── run_ground_direction_model_test.m
+├── README_ground_direction.md
+└── ground_direction_baseline.md
 ```
 
-允许对文件名进行一次协商，但合并前必须冻结；后端不得依赖临时模型名或人工修改 Base Workspace。
+文件名允许在开发开始前协商一次。模型可以由现有 `beaver_agent_env.slx` 复制扩展，但不得依赖 `E:\6DOF_Airframe` 才能运行。
 
 不要提交以下生成文件：
 
@@ -35,163 +49,94 @@ simulink/
 - 自动保存文件 `*.asv`
 - 本机绝对路径配置
 
-## 3. 坐标系和单位
+## 4. 模型输入信号
 
-- 模型内部统一使用 SI 单位。
-- 地面平面采用 NED/跑道局部坐标时，必须在模型 README 中说明轴向和正方向。
-- 角度输入输出统一使用 `rad`；仅前端展示层可以使用 `deg`。
-- 横向偏差必须约定正方向。建议“跑道中心线右侧为正”。
-- 航向误差统一归一化到 `[-pi, pi]`。
-- 风向由后端转换为模型坐标分量后传入，模型入口不自行猜测气象风向约定。
+模型至少应提供下列可被 MATLAB 脚本设置的信号。具体信号名可协商，但单位和含义必须保持明确。
 
-## 4. 初始化接口
-
-MATLAB 入口：
-
-```matlab
-result = ground_direction_reset(config)
-```
-
-`config` 至少包含：
-
-| 字段 | 单位 | 必需 | 说明 |
-| --- | --- | --- | --- |
-| `run_id` | string | 是 | 本次运行唯一标识 |
-| `initial_speed_mps` | m/s | 是 | 初始地速 |
-| `initial_lateral_offset_m` | m | 是 | 相对跑道中心线偏差 |
-| `initial_heading_rad` | rad | 是 | 初始航向 |
-| `runway_heading_rad` | rad | 是 | 跑道方向 |
-| `wind_north_mps` | m/s | 是 | 北向风速分量 |
-| `wind_east_mps` | m/s | 是 | 东向风速分量 |
-| `step_time_s` | s | 是 | 单步仿真时间 |
-| `max_simulation_time_s` | s | 是 | 终止保护时间 |
-
-成功返回：
-
-```matlab
-result.ok = true;
-result.done = false;
-result.event = "RESET";
-result.model_version = "scene3-0.2.0";
-result.state = struct(...);
-result.capabilities = struct( ...
-    'nose_wheel_steering', true, ...
-    'wind', true, ...
-    'differential_braking', false);
-```
-
-初始化失败时不得仅在 MATLAB 控制台打印错误；必须抛出可识别异常，或返回 `ok=false`、`error_code` 和 `message`。
-
-## 5. 单步接口
-
-MATLAB 入口：
-
-```matlab
-result = ground_direction_step(action)
-```
-
-`action` 字段：
-
-| 字段 | 单位/范围 | v0.2.0 状态 | 说明 |
-| --- | --- | --- | --- |
-| `rudder_rad` | 模型舵面物理范围 | supported | 方向舵指令 |
-| `nose_wheel_rad` | 转向机构物理范围 | supported | 前轮或等效转向指令 |
-| `throttle_left` | 0–1 | supported | 左油门 |
-| `throttle_right` | 0–1 | supported | 右油门 |
-| `brake_left` | 0–1 | reserved | 本版不产生制动力 |
-| `brake_right` | 0–1 | reserved | 本版不产生制动力 |
-
-模型必须执行限幅，并同时返回原始动作和实际施加动作，便于后端审计。
-
-返回的 `state` 至少包含：
-
-| 字段 | 单位 | 说明 |
+| 输入 | 单位 | 说明 |
 | --- | --- | --- |
-| `time_s` | s | 累计仿真时间 |
-| `x_m` | m | 跑道方向位置 |
-| `y_m` | m | 横向位置 |
-| `ground_speed_mps` | m/s | 地速 |
-| `heading_rad` | rad | 当前航向 |
-| `yaw_rate_radps` | rad/s | 偏航角速度 |
-| `lateral_error_m` | m | 相对中心线横向偏差 |
-| `heading_error_rad` | rad | 相对跑道方向误差 |
+| `RudderCmd` | rad | 方向舵指令 |
+| `NoseWheelCmd` | rad | 前轮或等效地面转向指令 |
+| `Throttle_Left` | 0–1 | 左油门 |
+| `Throttle_Right` | 0–1 | 右油门 |
+
+模型还需要允许测试脚本设置以下初始工况：
+
+- 初始地速，单位 `m/s`。
+- 初始横向偏差，单位 `m`。
+- 初始航向或相对跑道的航向误差，单位 `rad`。
+- 跑道方向，单位 `rad`。
+- 仿真时长和步长，单位 `s`。
+
+不要求模型负责人提供 Python 请求结构，也不要求把这些参数实现成 FastAPI 字段。
+
+## 5. 模型输出信号
+
+模型至少输出：
+
+| 输出 | 单位 | 说明 |
+| --- | --- | --- |
+| `time` | s | 仿真时间 |
+| `x` | m | 跑道方向位置 |
+| `y` | m | 横向位置 |
+| `ground_speed` | m/s | 地速 |
+| `heading` | rad | 当前航向 |
+| `yaw_rate` | rad/s | 偏航角速度 |
 | `on_ground` | bool | 是否保持有效地面接触 |
-| `flight_phase` | string | `GROUND_ROLL`、`SUCCESS` 或 `FAILED` |
 
-完整返回至少包含：
+横向偏差和航向误差可以由模型直接输出，也可以由后端根据 `x`、`y`、航向和跑道方向计算。模型说明必须明确：
 
-```matlab
-result.ok
-result.done
-result.event
-result.instruction
-result.state
-result.raw_action
-result.applied_action
-result.capabilities
-```
+- 坐标系定义。
+- 每个轴的正方向。
+- 横向位置的正方向。
+- 航向角的正方向和取值范围。
+- 输入限幅和转向角物理范围。
 
-## 6. 事件与终止条件
+## 6. 固定工况验证脚本
 
-模型至少产生以下标准事件：
+`run_ground_direction_model_test.m` 应能从全新 MATLAB 会话直接运行，不需要人工打开模型或修改 Base Workspace。
 
-- `RESET`
-- `GROUND_ROLL`
-- `DIRECTION_RECOVERED`
-- `RUNWAY_DEVIATION_LIMIT`
-- `GROUND_CONTACT_LOST`
-- `TIME_LIMIT_REACHED`
+至少验证三个固定工况：
 
-默认成功条件由场景规范配置，不硬编码在模型内部。建议第一版使用“在给定持续时间内横向偏差和航向误差均回到阈值内并保持若干秒”。阈值由后端 SceneSpec 传入或由模型返回原始量后在评价器中判断。
+1. 零转向输入：模型稳定地面滑跑，不出现无原因的状态发散。
+2. 正转向输入：产生一个方向的航向和横向响应。
+3. 负转向输入：产生与正输入相反的航向和横向响应。
 
-## 7. Python 集成要求
+验证脚本应生成可读结果，并在 `ground_direction_baseline.md` 中记录：
 
-后端将通过统一适配器把 MATLAB 返回值转换成与现有 `FlightEnv` 相同的结构：
+- MATLAB/Simulink 版本。
+- 模型版本或 Git 提交号。
+- 初始条件和控制输入。
+- 关键输出数值或曲线说明。
+- 三个工况是否通过。
+- 已知限制。
 
-```json
-{
-  "done": false,
-  "event": "GROUND_ROLL",
-  "instruction": "继续修正航向和横向偏差",
-  "state": {},
-  "applied_action": {}
-}
-```
+## 7. 模型负责人交付说明模板
 
-模型入口不得：
-
-- 要求人工打开模型后才能运行。
-- 从 `E:\\6DOF_Airframe` 加载文件。
-- 使用模型负责人的本机绝对路径。
-- 通过手工修改脚本常量才能切换工况。
-- 在 reset 之后丢失连续仿真状态。
-
-## 8. 模型负责人交付说明模板
-
-提交或合并请求中必须填写：
+提交或合并请求中填写：
 
 ```text
 模型版本：
 MATLAB/Simulink 版本：
-入口函数：
-输入字段及范围：
-输出字段及单位：
-已实现能力：
-预留但未实现能力：
+模型文件：
+测试脚本：
+输入信号、单位及范围：
+输出信号、单位及正方向：
+已实现的场景三能力：
+未实现能力：
 默认测试工况：
-测试命令：
 测试结果：
 已知限制：
 ```
 
-## 9. 模型验收条件
+## 8. 完成交付的判断标准
 
-- `run_ground_direction_smoke_test` 可以从全新 MATLAB 会话直接运行。
-- reset 后返回字段完整且所有数值有限。
-- 连续 step 不出现状态时间回退或重置。
-- 正、负转向指令能够产生方向相反且可解释的响应。
-- 零输入基线结果可复现。
-- 超范围动作会被限幅并在 `applied_action` 中体现。
-- 差动刹车明确标记为未实现。
-- 运行不读取 `E:\6DOF_Airframe`。
-- 模型和入口脚本通过后端真实调用测试。
+- 模型能够独立完成地面滑跑方向响应仿真。
+- 地面接触、轮胎侧向力、方向舵和前轮/等效转向行为可解释。
+- 正负转向输入产生方向相反的响应。
+- 输出信号足以让后端计算横向偏差、航向误差和安全状态。
+- 测试脚本和基准结果可复现。
+- 不读取 `E:\6DOF_Airframe`。
+- 没有实现或声称实现本任务范围外的场景一配平、系统接口及差动刹车功能。
+
+模型交付完成后，由后端与算法负责人编写 Python/MATLAB 适配层，将这些模型信号封装成系统统一的 reset/step 接口。
