@@ -212,9 +212,12 @@ class FlightEnv:
             eom = f"{self.model}/6DOF EOM/6DOF (Euler Angles)"
             initial_cmd = (
                 f"simIn = simIn.setBlockParameter('{eom}', "
-                f"'xme_0', '{_vector(initial, ('XN', 'YE', 'ZD'))}', "
-                f"'Vm_0', '{_vector(initial, ('U', 'V', 'W'))}', "
-                f"'eul_0', '{_vector(initial, ('phi', 'theta', 'psi'))}', "
+                f"'xme_0', '{_vector(initial, ('XN', 'YE', 'ZD'))}'); "
+                f"simIn = simIn.setBlockParameter('{eom}', "
+                f"'Vm_0', '{_vector(initial, ('U', 'V', 'W'))}'); "
+                f"simIn = simIn.setBlockParameter('{eom}', "
+                f"'eul_0', '{_vector(initial, ('phi', 'theta', 'psi'))}'); "
+                f"simIn = simIn.setBlockParameter('{eom}', "
                 f"'pm_0', '{_vector(initial, ('p', 'q', 'r'))}');"
             )
             self.eng.eval(initial_cmd, nargout=0)

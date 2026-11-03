@@ -65,7 +65,12 @@ class FakeTrimProvider:
 
 
 class FakeMatlabEngine:
+    def __init__(self) -> None:
+        self.workspace = {}
+        self.expressions: list[str] = []
+
     def eval(self, expression: str, nargout: int = 0):
+        self.expressions.append(expression)
         if "exist('simOut', 'var')" in expression:
             return 0
         return None
@@ -184,6 +189,68 @@ def test_flight_environment_uses_prepared_initial_state(monkeypatch) -> None:
         assert "350.0 ft" in reset["instruction"]
         assert environment.go_around_altitude == 220
         assert environment.target_altitude == 600
+    finally:
+        if environment.log_file.exists():
+            environment.log_file.unlink()
+
+
+def test_parameterized_first_step_sets_each_6dof_parameter_separately(
+    monkeypatch,
+) -> None:
+    parameters = EngineFailureParameters(
+        initial_altitude_ft=600,
+        initial_airspeed_ft_s=150,
+        engine_failure_altitude_ft=350,
+        go_around_altitude_ft=220,
+        target_altitude_ft=600,
+    )
+    trim = FakeTrimProvider().prepare_engine_failure(parameters.model_dump())
+    engine = FakeMatlabEngine()
+    monkeypatch.setattr(
+        "multiflight.simulation.flight_env.get_engine", lambda: engine
+    )
+    run_id = f"test-{uuid.uuid4().hex}"
+    environment = FlightEnv(
+        run_id=run_id,
+        configuration={
+            "normalized_parameters": parameters.model_dump(),
+            "trim": trim,
+        },
+    )
+    try:
+        environment.reset()
+        environment.get_state = lambda: {
+            "status": "running",
+            "time": 2.0,
+            "altitude": 580.0,
+            "airspeed": 150.0,
+            "vertical_speed": -9.84,
+            "roll": 0.01,
+            "pitch": 0.06,
+            "yaw": 0.0,
+            "roll_rate": 0.0,
+            "pitch_rate": 0.0,
+            "yaw_rate": 0.0,
+            "left_engine_fail": False,
+            "flight_phase": "TWIN_DESCENT",
+        }
+        environment.step(
+            {
+                "aileron": 0.002,
+                "elevator": -0.01,
+                "rudder": -0.04,
+                "throttle_left": 0.17,
+                "throttle_right": 0.17,
+            }
+        )
+        command = next(
+            expression
+            for expression in engine.expressions
+            if "setBlockParameter" in expression
+        )
+        assert command.count("setBlockParameter") == 4
+        for parameter_name in ("xme_0", "Vm_0", "eul_0", "pm_0"):
+            assert f"'{parameter_name}'" in command
     finally:
         if environment.log_file.exists():
             environment.log_file.unlink()
