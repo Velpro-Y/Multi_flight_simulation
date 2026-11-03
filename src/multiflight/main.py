@@ -16,18 +16,22 @@ from .dify_client import DifyClient
 from .evaluation import RegressionGate, RunEvaluator
 from .prompts import PromptCompiler, PromptStore
 from .prompts.candidates import CandidateGenerator
+from .parameter_registry import ParameterRegistry
 from .scene_registry import SceneRegistry
 from .schemas import (
     Action,
     OptimizationRequest,
+    PreparationRequest,
     PublishRequest,
     RunRequest,
     SessionRequest,
 )
 from .services.optimization_service import OptimizationService
+from .services.preparation_service import PreparationError, PreparationService
 from .services.run_service import RunService
 from .settings import LOG_LEVEL
 from .simulation import SimulationManager
+from .trimming import MatlabTrimProvider
 
 
 logging.basicConfig(
@@ -37,7 +41,7 @@ logging.basicConfig(
 
 app = FastAPI(
     title="Multi Flight Simulation Demo",
-    version="0.1.0",
+    version="0.2.0-dev",
     description=(
         "独立的多场景飞行仿真、Dify Agent调用、提示词优化和回归验证服务。"
     ),
@@ -60,6 +64,13 @@ regression = RegressionGate()
 candidate_generator = CandidateGenerator()
 executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="multiflight")
 execution_lock = threading.Lock()
+parameter_registry = ParameterRegistry()
+preparation_service = PreparationService(
+    jobs=jobs,
+    scenes=scenes,
+    trimmer=MatlabTrimProvider(),
+    execution_lock=execution_lock,
+)
 
 run_service = RunService(
     jobs=jobs,
@@ -137,6 +148,32 @@ def get_scene(scene_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+@app.get("/api/scenarios/{scene_id}/parameters", tags=["scenes"])
+def get_scene_parameters(scene_id: str) -> dict[str, Any]:
+    try:
+        scenes.get(scene_id)
+        return parameter_registry.schema(scene_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/simulations/prepare", tags=["simulations"])
+def prepare_simulation(request: PreparationRequest) -> dict[str, Any]:
+    try:
+        return preparation_service.prepare(request.scene_id, request.parameters)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PreparationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail()) from exc
+
+
+@app.get(
+    "/api/simulations/preparations/{preparation_id}", tags=["simulations"]
+)
+def get_preparation(preparation_id: str) -> dict[str, Any]:
+    return _get_job(preparation_id, expected_kind="preparation")
+
+
 @app.get("/api/prompts/{scene_id}/versions", tags=["prompts"])
 def list_prompt_versions(scene_id: str) -> dict[str, Any]:
     try:
@@ -195,11 +232,21 @@ def start_run(request: RunRequest) -> dict[str, Any]:
                 status_code=409,
                 detail=scene.unavailable_reason or "Scene is unavailable",
             )
+        preparation = None
+        if request.preparation_id:
+            preparation = preparation_service.get_ready(
+                request.preparation_id, request.scene_id
+            )
         return run_service.start(
-            request.scene_id, request.prompt_version, request.query
+            request.scene_id,
+            request.prompt_version,
+            request.query,
+            preparation,
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PreparationError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail()) from exc
 
 
 @app.get("/api/runs", tags=["runs"])

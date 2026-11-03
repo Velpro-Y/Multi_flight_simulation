@@ -18,6 +18,7 @@ from ..settings import *
 from .matlab_engine import get_engine
 
 import csv
+from copy import deepcopy
 
 
 logger = logging.getLogger(__name__)
@@ -25,20 +26,51 @@ logger = logging.getLogger(__name__)
 
 class FlightEnv:
 
-    def __init__(self, run_id: str = "manual"):
+    def __init__(self, run_id: str = "manual", configuration=None):
 
         self.eng = get_engine()
+
+        self.configuration = deepcopy(configuration) if configuration else {}
+        parameters = self.configuration.get("normalized_parameters", {})
+        trim_result = self.configuration.get("trim", {})
+        profiles = trim_result.get("profiles", {})
+        self.twin_descent_trim = deepcopy(
+            profiles.get("twin_descent", TWIN_DESCENT_TRIM)
+        )
+        self.engine_out_descent_trim = deepcopy(
+            profiles.get("engine_out_descent", ENGINE_OUT_DESCENT_TRIM)
+        )
+        self.engine_out_climb_trim = deepcopy(
+            profiles.get("engine_out_climb", ENGINE_OUT_CLIMB_TRIM)
+        )
+        self.initial_state = deepcopy(trim_result.get("initial_state"))
+        self.initial_altitude = float(
+            parameters.get("initial_altitude_ft", DEFAULT_STATE["AltitudeMSL"])
+        )
+        self.engine_failure_altitude = float(
+            parameters.get(
+                "engine_failure_altitude_ft", ENGINE_FAILURE_ALTITUDE_FT
+            )
+        )
+        self.go_around_altitude = float(
+            parameters.get("go_around_altitude_ft", GO_AROUND_ALTITUDE_FT)
+        )
+        self.max_simulation_time = float(
+            parameters.get("max_simulation_time_s", 300.0)
+        )
 
         self.model = MODEL_NAME
         self.state_file = str(STATE_FILE)
         self.time = 0
-        self.current_altitude = DEFAULT_STATE["AltitudeMSL"]
-        self.last_altitude = DEFAULT_STATE["AltitudeMSL"]
-        self.target_altitude = TARGET_ALTITUDE_FT
+        self.current_altitude = self.initial_altitude
+        self.last_altitude = self.initial_altitude
+        self.target_altitude = float(
+            parameters.get("target_altitude_ft", TARGET_ALTITUDE_FT)
+        )
         self.left_engine_fail = False
         self.flight_phase = PHASE_TWIN_DESCENT
         self.go_around_time = 0.0
-        self._reset_single_engine_stabilizer(ENGINE_OUT_DESCENT_TRIM)
+        self._reset_single_engine_stabilizer(self.engine_out_descent_trim)
         self.run_id = run_id
         self.log_file = LOG_DIR / f"{run_id}_telemetry.csv"
 
@@ -56,12 +88,12 @@ class FlightEnv:
         logger.info("Reset Flight Environment")
 
         self.time = 0
-        self.last_altitude = DEFAULT_STATE["AltitudeMSL"]
-        self.current_altitude = DEFAULT_STATE["AltitudeMSL"]
+        self.last_altitude = self.initial_altitude
+        self.current_altitude = self.initial_altitude
         self.left_engine_fail = False
         self.flight_phase = PHASE_TWIN_DESCENT
         self.go_around_time = 0.0
-        self._reset_single_engine_stabilizer(ENGINE_OUT_DESCENT_TRIM)
+        self._reset_single_engine_stabilizer(self.engine_out_descent_trim)
 
         # 初始化/清空历史日志并写入表头
         with open(self.log_file, mode="w", newline="", encoding="utf-8") as f:
@@ -93,7 +125,7 @@ class FlightEnv:
             "event": "RESET",
             "instruction": (
                 "Aircraft initialized successfully. Maintain twin-engine "
-                "descent to 300 ft."
+                f"descent to {self.engine_failure_altitude:.1f} ft."
             ),
             "state": initial_state
         }
@@ -175,6 +207,21 @@ class FlightEnv:
         )
         self.eng.eval(sim_prep_cmds, nargout=0)
 
+        if not os.path.exists(self.state_file) and self.initial_state:
+            initial = self.initial_state
+            eom = f"{self.model}/6DOF EOM/6DOF (Euler Angles)"
+            initial_cmd = (
+                f"simIn = simIn.setBlockParameter('{eom}', "
+                f"'xme_0', '{_vector(initial, ('XN', 'YE', 'ZD'))}'); "
+                f"simIn = simIn.setBlockParameter('{eom}', "
+                f"'Vm_0', '{_vector(initial, ('U', 'V', 'W'))}'); "
+                f"simIn = simIn.setBlockParameter('{eom}', "
+                f"'eul_0', '{_vector(initial, ('phi', 'theta', 'psi'))}'); "
+                f"simIn = simIn.setBlockParameter('{eom}', "
+                f"'pm_0', '{_vector(initial, ('p', 'q', 'r'))}');"
+            )
+            self.eng.eval(initial_cmd, nargout=0)
+
         # -------------------------
         # 3. 如果存在上一时刻状态，载入 xFinal 作为当前 step 的 InitialState
         # -------------------------
@@ -210,29 +257,29 @@ class FlightEnv:
         # 阶段 1 -> 2：300 ft 左发失效，但继续稳定下降。
         if (
             self.flight_phase == PHASE_TWIN_DESCENT
-            and state["altitude"] <= ENGINE_FAILURE_ALTITUDE_FT
+            and state["altitude"] <= self.engine_failure_altitude
         ):
             self.left_engine_fail = True
             self.flight_phase = PHASE_ENGINE_OUT_DESCENT
             self.go_around_time = 0.0
-            self._reset_single_engine_stabilizer(ENGINE_OUT_DESCENT_TRIM)
+            self._reset_single_engine_stabilizer(self.engine_out_descent_trim)
             event = "LEFT_ENGINE_FAILURE"
             instruction = (
-                "LEFT ENGINE FAILURE at 300 ft. Keep throttle_left "
+                f"LEFT ENGINE FAILURE at {self.engine_failure_altitude:.1f} ft. Keep throttle_left "
                 "at 0.0 and continue a stabilized single-engine descent to "
-                "200 ft; do not initiate the go-around yet."
+                f"{self.go_around_altitude:.1f} ft; do not initiate the go-around yet."
             )
 
         # 阶段 2 -> 3：200 ft 才发出复飞指令并启动平滑调度。
         elif (
             self.flight_phase == PHASE_ENGINE_OUT_DESCENT
-            and state["altitude"] <= GO_AROUND_ALTITUDE_FT
+            and state["altitude"] <= self.go_around_altitude
         ):
             self.flight_phase = PHASE_GO_AROUND
             self.go_around_time = 0.0
             event = "GO_AROUND_INITIATED"
             instruction = (
-                "GO-AROUND initiated at 200 ft. The stabilizer will "
+                f"GO-AROUND initiated at {self.go_around_altitude:.1f} ft. The stabilizer will "
                 "blend from engine-out descent trim to validated single-engine "
                 "climb trim over 6 seconds."
             )
@@ -240,13 +287,13 @@ class FlightEnv:
             event = "SINGLE_ENGINE_DESCENT"
             instruction = (
                 "Continue stabilized single-engine descent at about -9.84 ft/s "
-                "towards 200 ft."
+                f"towards {self.go_around_altitude:.1f} ft."
             )
         elif self.flight_phase == PHASE_GO_AROUND:
             event = "SINGLE_ENGINE_GO_AROUND"
             instruction = (
                 "Executing single-engine go-around. Do not fight the internal "
-                "rate-feedback stabilizer; climb steadily towards 500 ft."
+                f"rate-feedback stabilizer; climb steadily towards {self.target_altitude:.1f} ft."
             )
 
         # -------------------------
@@ -264,6 +311,10 @@ class FlightEnv:
             instruction = (
                 "Go-around successful! Target altitude reached on single engine."
             )
+        elif self.time >= self.max_simulation_time:
+            done = True
+            event = "TIME_LIMIT_REACHED"
+            instruction = "Maximum simulation time reached before task completion."
 
         # -------------------------
         # 7. 记录本步最终事件和阶段
@@ -347,8 +398,8 @@ class FlightEnv:
                 1.0,
             )
         scheduled = self._interpolate_trim(
-            ENGINE_OUT_DESCENT_TRIM,
-            ENGINE_OUT_CLIMB_TRIM,
+            self.engine_out_descent_trim,
+            self.engine_out_climb_trim,
             blend,
         )
         target_roll = scheduled["roll"]
@@ -450,21 +501,21 @@ class FlightEnv:
         default_state = {
             "status": "reset",
             "time": self.time,
-            "altitude": TARGET_ALTITUDE_FT,
-            "airspeed": TWIN_DESCENT_TRIM["airspeed"],
-            "vertical_speed": TWIN_DESCENT_TRIM["vertical_speed"],
-            "roll": TWIN_DESCENT_TRIM["roll"],
-            "pitch": TWIN_DESCENT_TRIM["pitch"],
-            "yaw": 0.0,
-            "roll_rate": 0.0,
-            "pitch_rate": 0.0,
-            "yaw_rate": 0.0,
+            "altitude": self.initial_altitude,
+            "airspeed": self.twin_descent_trim["airspeed"],
+            "vertical_speed": self.twin_descent_trim["vertical_speed"],
+            "roll": self.twin_descent_trim["roll"],
+            "pitch": self.twin_descent_trim["pitch"],
+            "yaw": float((self.initial_state or {}).get("psi", 0.0)),
+            "roll_rate": float((self.initial_state or {}).get("p", 0.0)),
+            "pitch_rate": float((self.initial_state or {}).get("q", 0.0)),
+            "yaw_rate": float((self.initial_state or {}).get("r", 0.0)),
             "left_engine_fail": self.left_engine_fail,
             "flight_phase": self.flight_phase,
         }
 
         if is_exist == 0:
-            self.last_altitude = DEFAULT_STATE["AltitudeMSL"]  # 恢复初始高度记录
+            self.last_altitude = self.initial_altitude
             return default_state
         ze = float(self.eng.eval("simOut.Ze.Data(end)"))
 
@@ -519,3 +570,7 @@ class FlightEnv:
     def close(self):
 
         logger.info("Flight Environment Closed")
+
+
+def _vector(values, keys):
+    return "[" + " ".join(f"{float(values[key]):.15g}" for key in keys) + "]"

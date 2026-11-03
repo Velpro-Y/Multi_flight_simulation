@@ -53,12 +53,19 @@ class RunService:
         scene_id: str,
         prompt_version: Optional[str] = None,
         query: Optional[str] = None,
+        preparation: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         run_id = f"run-{uuid.uuid4().hex[:12]}"
         payload = {
             "scene_id": scene_id,
             "prompt_version": prompt_version,
             "query": query,
+            "preparation_id": (
+                preparation.get("preparation_id") if preparation else None
+            ),
+            "parameters": (
+                preparation.get("normalized_parameters") if preparation else None
+            ),
         }
         job = self.jobs.create(run_id, "run", payload, "等待执行")
         self.executor.submit(
@@ -67,6 +74,7 @@ class RunService:
             scene_id,
             prompt_version,
             query,
+            preparation,
         )
         return job
 
@@ -76,10 +84,13 @@ class RunService:
         scene_id: str,
         prompt_version: Optional[str],
         query: Optional[str],
+        preparation: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         try:
             with self.execution_lock:
-                return self._execute_locked(run_id, scene_id, prompt_version, query)
+                return self._execute_locked(
+                    run_id, scene_id, prompt_version, query, preparation
+                )
         except Exception as exc:
             self.jobs.update(
                 run_id,
@@ -96,6 +107,7 @@ class RunService:
         scene_id: str,
         prompt_version: Optional[str],
         query: Optional[str],
+        preparation: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         scene = self.scenes.get(scene_id)
         if scene.status != "enabled":
@@ -106,6 +118,7 @@ class RunService:
             scene,
             version_record["version"],
             version_record.get("addendum", ""),
+            runtime_context=preparation,
         )
         self.jobs.update(
             run_id,
@@ -113,7 +126,12 @@ class RunService:
             progress=0.02,
             message=f"已加载提示词 {artifact.version}，等待Dify Agent调用仿真工具",
         )
-        self.simulator.begin_run(run_id, scene_id, self._on_progress)
+        self.simulator.begin_run(
+            run_id,
+            scene_id,
+            self._on_progress,
+            configuration=preparation,
+        )
 
         try:
             dify_result = self.dify.run_agent(
@@ -123,11 +141,22 @@ class RunService:
             )
             records = self.simulator.snapshot()
             evaluation = self.evaluator.evaluate(
-                scene, records, artifact.version, artifact.prompt_hash
+                scene,
+                records,
+                artifact.version,
+                artifact.prompt_hash,
+                runtime_context=preparation,
             )
             result = {
                 "run_id": run_id,
                 "scene_id": scene_id,
+                "preparation_id": (
+                    preparation.get("preparation_id") if preparation else None
+                ),
+                "parameters": (
+                    preparation.get("normalized_parameters") if preparation else None
+                ),
+                "trim": preparation.get("trim") if preparation else None,
                 "prompt": {
                     "version": artifact.version,
                     "prompt_hash": artifact.prompt_hash,

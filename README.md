@@ -4,6 +4,8 @@
 
 当前基线版本：`v0.1.0`。该版本为固定参数单发失效复飞 Demo，场景参数化和场景三地面方向控制将在后续版本中扩展。
 
+`feature/parameterized-simulation` 分支正在开发 `v0.2.0` 场景一参数化链路，已支持参数 Schema、参数校验、MATLAB 动态配平、配平结果保存及使用 `preparation_id` 启动实验。
+
 ## 协作开发与交付
 
 第二版在 `develop` 分支开发，目标版本为 `v0.2.0`。协作开发以以下文档为准：
@@ -69,6 +71,17 @@ FlightEnv → MATLAB Engine → simulink/beaver_agent_env.slx
    ```
 
 API 文档地址：<http://localhost:8000/docs>
+
+参数化场景一依次调用：
+
+```text
+GET  /api/scenarios/engine_failure/parameters
+POST /api/simulations/prepare
+POST /api/runs
+GET  /api/runs/{run_id}
+```
+
+`POST /api/simulations/prepare` 会调用 MATLAB `findop` 重新计算双发下降、单发下降和单发复飞配平。当前风场接口标记为预留，非零风速会被明确拒绝。
 
 ## 首次验证
 
