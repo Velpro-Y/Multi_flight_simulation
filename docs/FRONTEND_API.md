@@ -36,7 +36,7 @@
 }
 ```
 
-`prompt_version=null` 表示自动使用已发布版本；`query=null` 表示使用后端内置的一键实验指令。正式前端一般只传 `scene_id`。
+`prompt_version=null` 表示自动使用已发布版本；`query=null` 表示使用后端内置的一键实验指令。使用默认固定参数时可只传 `scene_id`；自定义参数时应先配平，再传返回的 `preparation_id`。不要传字符串 `"string"` 或 `"null"`。
 
 任务通用返回结构：
 
@@ -63,7 +63,7 @@
 
 ## 3. v0.2.0 参数化接口
 
-本节接口已在 `feature/parameterized-simulation` 分支实现，合并到 `develop` 后作为第二版前端联调接口。字段调整必须同步修改本文档和后端测试。
+本节场景一接口已合并到 `develop`，可用于前端联调。场景三在 `codex/scene3-ground-direction` 独立开发，尚未合入 `develop`。字段调整必须同步修改本文档和后端测试。
 
 ### 3.1 查询场景参数 Schema
 
@@ -120,7 +120,7 @@ GET /api/scenarios/{scene_id}/parameters
 | 字段 | 单位 | 默认值 | v0.2.0 初始范围 | 说明 |
 | --- | --- | ---: | ---: | --- |
 | `initial_altitude_ft` | ft | 500 | 400–1000 | 初始状态和配平高度 |
-| `initial_airspeed_ft_s` | ft/s | 148.91 | 135–165 | 初始真空速，参与配平 |
+| `initial_airspeed_ft_s` | ft/s | 148.91 | 135–165 | 初始速度参数，参与配平；实际空速见返回状态 |
 | `engine_failure_altitude_ft` | ft | 300 | 250–800 | 左发失效触发高度 |
 | `go_around_altitude_ft` | ft | 200 | 100–700 | 复飞触发高度 |
 | `target_altitude_ft` | ft | 500 | 400–1500 | 完成判据高度 |
@@ -136,7 +136,9 @@ engine_failure_altitude_ft > go_around_altitude_ft > 0
 target_altitude_ft > go_around_altitude_ft
 ```
 
-只有初始飞行条件和会改变稳态气动工况的环境参数参与初始配平。失效高度、复飞高度、目标高度和最长仿真时间属于事件或终止条件，不分别配平。
+当前配平服务在初始高度、失效高度和复飞高度分别计算双发下降、单发下降和单发爬升配平。目标高度、最长仿真时间不参与配平。速度输入用于指定模型机体系纵向速度U，模型输出的总空速可能略高于输入值。
+
+可用[12组已测参数](../resources/validation/engine_failure_20261111/frontend_presets.json)作为前端演示选项。该文件的`parameters`可直接用于配平请求；各部署需生成自己的`preparation_id`。135 ft/s测试点配平失败；1500 ft目标组合需要105步，可能超出Dify单轮预算。全部测试结果见[参数回归报告](ENGINE_FAILURE_REGRESSION.md)。
 
 若真实风场端口尚未交付，后端只能接受 `wind_speed_ft_s=0`，不得接收非零风速后静默忽略。
 

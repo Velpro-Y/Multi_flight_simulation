@@ -175,7 +175,12 @@ class RunEvaluator:
                 airspeed = float(state["airspeed"])
                 roll = float(state["roll"])
                 pitch = float(state["pitch"])
+                altitude = float(state["altitude"])
             except (TypeError, ValueError, KeyError):
+                return False
+            if not all(isfinite(v) for v in (airspeed, roll, pitch, altitude)):
+                return False
+            if scene.scene_id == "engine_failure" and altitude <= 0:
                 return False
             if safety.min_airspeed_ft_s is not None and airspeed < safety.min_airspeed_ft_s:
                 return False

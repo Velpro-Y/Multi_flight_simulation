@@ -19,6 +19,8 @@
 
 ## 2. 当前基线
 
+当前`develop`已集成场景一参数化配平、低速复飞控制修复及回归验证，前端可按[FRONTEND_API.md](FRONTEND_API.md)联调。场景三后端适配与试验代码保存在`codex/scene3-ground-direction`，暂不合入`develop`。
+
 `v0.1.0` 已实现：
 
 - 场景一固定参数运行：500 ft 双发下降、300 ft 左发失效、200 ft 单发复飞、500 ft 完成。

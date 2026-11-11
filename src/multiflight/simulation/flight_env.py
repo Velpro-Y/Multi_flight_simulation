@@ -16,6 +16,9 @@ import logging
 
 from ..settings import *
 from .matlab_engine import get_engine
+from .engine_failure_control import single_engine_controls
+from .flight_safety import state_limit_reason
+from ..scene_registry import SceneRegistry
 
 import csv
 from copy import deepcopy
@@ -72,6 +75,8 @@ class FlightEnv:
         self.go_around_time = 0.0
         self._reset_single_engine_stabilizer(self.engine_out_descent_trim)
         self.run_id = run_id
+        self.safety_limits = SceneRegistry().get("engine_failure").safety
+        self._terminal_result = None
         self.log_file = LOG_DIR / f"{run_id}_telemetry.csv"
 
 
@@ -86,6 +91,7 @@ class FlightEnv:
     def reset(self):
 
         logger.info("Reset Flight Environment")
+        self._terminal_result = None
 
         self.time = 0
         self.last_altitude = self.initial_altitude
@@ -134,6 +140,9 @@ class FlightEnv:
     # =====================================================
 
     def step(self, action: dict):
+
+        if self._terminal_result is not None:
+            return deepcopy(self._terminal_result)
 
         logger.info(f"Receive Action : {action}")
 
@@ -304,7 +313,13 @@ class FlightEnv:
             self.flight_phase == PHASE_GO_AROUND
             and state["altitude"] >= self.target_altitude
         )
-        if done:
+        safety_reason = state_limit_reason(state, self.safety_limits)
+        if safety_reason:
+            done = True
+            event = safety_reason
+            instruction = f"Simulation terminated: {safety_reason}. Do not call step again."
+            state["termination_reason"] = safety_reason
+        elif done:
             self.flight_phase = PHASE_SUCCESS
             state["flight_phase"] = PHASE_SUCCESS
             event = "GO_AROUND_SUCCESS"
@@ -343,7 +358,7 @@ class FlightEnv:
         except Exception as e:
             logger.error(f"Failed to write telemetry log: {e}")
 
-        return {
+        result = {
             "done": done,
             "event": event,
             "instruction": instruction,
@@ -356,6 +371,9 @@ class FlightEnv:
                 "throttle_right": float(throttle_right),
             },
         }
+        if done:
+            self._terminal_result = deepcopy(result)
+        return result
 
     # =====================================================
     # 单发低层增稳器
@@ -383,111 +401,8 @@ class FlightEnv:
         }
 
     def _single_engine_stabilizer(self, state, go_around=False):
-        """Return rate-limited single-engine controls for the current state.
-
-        The control signs and the lateral control-effectiveness matrix were
-        measured directly in Simulink. Before 200 ft the controller holds the
-        single-engine descent trim. After the go-around event, every target and
-        trim center is blended to the climb operating point over six seconds.
-        """
-        blend = 0.0
-        if go_around:
-            blend = self._clamp(
-                self.go_around_time / GO_AROUND_TRANSITION_TIME_S,
-                0.0,
-                1.0,
-            )
-        scheduled = self._interpolate_trim(
-            self.engine_out_descent_trim,
-            self.engine_out_climb_trim,
-            blend,
-        )
-        target_roll = scheduled["roll"]
-        target_pitch_nominal = scheduled["pitch"]
-        target_vertical_speed = scheduled["vertical_speed"]
-        target_airspeed = scheduled["airspeed"]
-
-        # Local measured one-second control effectiveness:
-        # [dp] = [-0.923  -1.033] [d_aileron]
-        # [dr]   [ 0.543  -1.796] [d_rudder ]
-        roll_error = state["roll"] - target_roll
-        p_command = self._clamp(-1.20 * roll_error, -0.12, 0.12)
-        delta_p = 1.40 * (p_command - state["roll_rate"])
-        delta_r = 1.40 * (0.0 - state["yaw_rate"])
-        delta_aileron = (-1.7955 * delta_p + 1.033 * delta_r) / 2.217
-        delta_rudder = (-0.5425 * delta_p - 0.923 * delta_r) / 2.217
-
-        raw_aileron = self._clamp(
-            scheduled["aileron"] + delta_aileron, -0.25, 0.25
-        )
-        raw_rudder = self._clamp(
-            scheduled["rudder"] + delta_rudder, -0.50, 0.15
-        )
-        aileron = self._clamp(
-            raw_aileron,
-            self._se_previous_aileron - 0.04,
-            self._se_previous_aileron + 0.04,
-        )
-        rudder = self._clamp(
-            raw_rudder,
-            self._se_previous_rudder - 0.05,
-            self._se_previous_rudder + 0.05,
-        )
-
-        target_pitch = (
-            target_pitch_nominal
-            + (0.025 / MPS_TO_FPS)
-            * (target_vertical_speed - state["vertical_speed"])
-            + (0.010 / MPS_TO_FPS)
-            * (target_airspeed - state["airspeed"])
-        )
-        target_pitch = self._clamp(target_pitch, 0.04, 0.21)
-        q_command = self._clamp(
-            0.65 * (target_pitch - state["pitch"]), -0.08, 0.08
-        )
-        raw_elevator = self._clamp(
-            scheduled["elevator"]
-            - 0.34 * (q_command - state["pitch_rate"]),
-            -0.05,
-            0.03,
-        )
-        elevator = self._clamp(
-            raw_elevator,
-            self._se_previous_elevator - 0.012,
-            self._se_previous_elevator + 0.012,
-        )
-
-        raw_throttle = self._clamp(
-            scheduled["throttle_right"]
-            + (0.020 / MPS_TO_FPS)
-            * (target_airspeed - state["airspeed"])
-            + (0.012 / MPS_TO_FPS)
-            * (target_vertical_speed - state["vertical_speed"]),
-            0.12,
-            0.78,
-        )
-        throttle_right = self._clamp(
-            raw_throttle,
-            self._se_previous_throttle - 0.06,
-            self._se_previous_throttle + 0.06,
-        )
-
-        self._se_previous_aileron = aileron
-        self._se_previous_elevator = elevator
-        self._se_previous_rudder = rudder
-        self._se_previous_throttle = throttle_right
-
-        return {
-            "aileron": aileron,
-            "elevator": elevator,
-            "rudder": rudder,
-            "throttle_left": 0.0,
-            "throttle_right": throttle_right,
-            "trim_blend": blend,
-            "target_roll": target_roll,
-            "target_pitch": target_pitch_nominal,
-            "target_vertical_speed": target_vertical_speed,
-        }
+        """Coordinate trim transition and feedback at the two-second interval."""
+        return single_engine_controls(self, state, go_around)
 
     # =====================================================
     # 获取飞机状态

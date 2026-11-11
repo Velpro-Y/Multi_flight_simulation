@@ -1,0 +1,291 @@
+[
+  {
+    "case_id": "C01",
+    "parameters": {
+      "initial_altitude_ft": 500.0,
+      "initial_airspeed_ft_s": 148.911745406824,
+      "engine_failure_altitude_ft": 300.0,
+      "go_around_altitude_ft": 200.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 53,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C03",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 140.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 46,
+    "controller_matlab_verified": true,
+    "dify_verification": {
+      "run_id": "run-edd992a67402",
+      "status": "succeeded",
+      "error": null,
+      "evaluation": {
+        "scene_id": "engine_failure",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "c1152106dea740754e19c94ea8e156ec56d798b5d630a25889ef494e82137652",
+        "passed": true,
+        "hard_gates": {
+          "has_steps": true,
+          "format_valid": true,
+          "phase_order_valid": true,
+          "no_early_go_around": true,
+          "control_direction_valid": true,
+          "state_safe": true,
+          "completed": true
+        },
+        "failure_labels": [],
+        "metrics": {
+          "steps": 46,
+          "smoothness": 0.004145,
+          "saturation_rate": 0.0,
+          "score": 99.917
+        },
+        "phase_trace": [
+          "TWIN_DESCENT",
+          "ENGINE_OUT_DESCENT",
+          "GO_AROUND",
+          "SUCCESS"
+        ]
+      },
+      "final_state": {
+        "time": 92.0,
+        "altitude": 409.3615775531057,
+        "airspeed": 141.86419760234548,
+        "vertical_speed": 4.892875130679499,
+        "roll": 0.04927779253918282,
+        "pitch": 0.17775909833370648,
+        "yaw": 0.41948733535626076,
+        "roll_rate": -0.03885382461696447,
+        "pitch_rate": -0.00042887715050334767,
+        "yaw_rate": 0.0017598141182991096,
+        "left_engine_fail": true,
+        "flight_phase": "SUCCESS"
+      },
+      "min_altitude_ft": 113.7591139823793
+    }
+  },
+  {
+    "case_id": "C04",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 150.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 44,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C05",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 160.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 42,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C06",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 165.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 42,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C07",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 140.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 100.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 55,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C08",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 150.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 100.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 53,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C09",
+    "parameters": {
+      "initial_altitude_ft": 700.0,
+      "initial_airspeed_ft_s": 160.0,
+      "engine_failure_altitude_ft": 400.0,
+      "go_around_altitude_ft": 300.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 47,
+    "controller_matlab_verified": true,
+    "dify_verification": {
+      "case_id": "C09",
+      "run_id": "run-b9ad78d61d2e",
+      "status": "succeeded",
+      "error": null,
+      "steps": 47,
+      "evaluation": {
+        "scene_id": "engine_failure",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "f267fbc1486ba76bd7d2b9cb25320ab7509f0a50cc26d30b27591490a1d36b7d",
+        "passed": true,
+        "hard_gates": {
+          "has_steps": true,
+          "format_valid": true,
+          "phase_order_valid": true,
+          "no_early_go_around": true,
+          "control_direction_valid": true,
+          "state_safe": true,
+          "completed": true
+        },
+        "failure_labels": [],
+        "metrics": {
+          "steps": 47,
+          "smoothness": 0.003838,
+          "saturation_rate": 0.0,
+          "score": 99.923
+        },
+        "phase_trace": [
+          "TWIN_DESCENT",
+          "ENGINE_OUT_DESCENT",
+          "GO_AROUND",
+          "SUCCESS"
+        ]
+      },
+      "final_state": {
+        "time": 94.0,
+        "altitude": 508.28733777545494,
+        "airspeed": 160.93312366787825,
+        "vertical_speed": 4.585570194661329,
+        "roll": 0.03301765103357797,
+        "pitch": 0.15300601372148548,
+        "yaw": -0.014798535697080707,
+        "roll_rate": -0.0811189712147559,
+        "pitch_rate": 0.007742149142436183,
+        "yaw_rate": -0.04181939112519355,
+        "left_engine_fail": true,
+        "flight_phase": "SUCCESS"
+      },
+      "minimum_altitude_ft": 269.22542341767684,
+      "max_abs_roll_deg": 7.416396782678195
+    }
+  },
+  {
+    "case_id": "C10",
+    "parameters": {
+      "initial_altitude_ft": 1000.0,
+      "initial_airspeed_ft_s": 165.0,
+      "engine_failure_altitude_ft": 800.0,
+      "go_around_altitude_ft": 700.0,
+      "target_altitude_ft": 1000.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 52,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C11",
+    "parameters": {
+      "initial_altitude_ft": 1000.0,
+      "initial_airspeed_ft_s": 140.0,
+      "engine_failure_altitude_ft": 800.0,
+      "go_around_altitude_ft": 200.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 78,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C12",
+    "parameters": {
+      "initial_altitude_ft": 600.0,
+      "initial_airspeed_ft_s": 145.0,
+      "engine_failure_altitude_ft": 350.0,
+      "go_around_altitude_ft": 220.0,
+      "target_altitude_ft": 800.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 86,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  },
+  {
+    "case_id": "C13",
+    "parameters": {
+      "initial_altitude_ft": 500.0,
+      "initial_airspeed_ft_s": 150.0,
+      "engine_failure_altitude_ft": 490.0,
+      "go_around_altitude_ft": 480.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "tested_steps": 11,
+    "controller_matlab_verified": true,
+    "dify_verification": null
+  }
+]

@@ -2,9 +2,9 @@
 
 独立的多场景飞行仿真 Demo。所有运行代码、Simulink 模型、提示词、Dify 配置和回归验证都位于本项目；`E:\6DOF_Airframe` 仅作为迁移来源，不参与运行。
 
-当前基线版本：`v0.1.0`。该版本为固定参数单发失效复飞 Demo，场景参数化和场景三地面方向控制将在后续版本中扩展。
+`develop` 当前提供场景一参数化单发失效复飞：支持前端参数校验、三阶段动态配平、提示词自动选择、Dify决策、仿真及自动评估。控制更新周期为2秒，已完成低速复飞修复和15组参数回归。
 
-`feature/parameterized-simulation` 分支正在开发 `v0.2.0` 场景一参数化链路，已支持参数 Schema、参数校验、MATLAB 动态配平、配平结果保存及使用 `preparation_id` 启动实验。
+`main` 和 `v0.1.0` 标签保留固定参数基线。场景三在 `codex/scene3-ground-direction` 分支开发，尚未合入 `develop`。
 
 ## 协作开发与交付
 
@@ -14,14 +14,17 @@
 - [前端 API 交付规范](docs/FRONTEND_API.md)
 - [场景三模型接口与交付规范](docs/SCENE3_MODEL_CONTRACT.md)
 - [验收与合并检查表](docs/ACCEPTANCE_CHECKLIST.md)
+- [场景一控制修复说明](docs/ENGINE_FAILURE_CONTROL_FIX.md)
+- [场景一参数回归结果](docs/ENGINE_FAILURE_REGRESSION.md)
+- [已验证参数与结果快照](resources/validation/engine_failure_20261111/README.md)
 
 文档中会分别标注“v0.1.0 已实现”和“v0.2.0 计划实现”。`main` 和
 `v0.1.0` 标签只保存已验证基线，尚未完成的第二版功能不得直接提交到
 `main`。
 
-## 首版范围
+## develop 当前范围
 
-- 场景一“单发失效复飞”可运行：500 ft双发下降，300 ft左发失效，200 ft开始单发复飞并返回500 ft。
+- 场景一“单发失效复飞”可参数化运行；默认500 ft双发下降、300 ft左发失效、200 ft复飞并返回500 ft。
 - 场景二“地面减速”保留接口，刹车模块暂缓。
 - 场景三“地面方向控制”标记为后续扩展。
 - 通过专用 Dify Agent 应用 API 完成决策。
@@ -83,6 +86,10 @@ GET  /api/runs/{run_id}
 
 `POST /api/simulations/prepare` 会调用 MATLAB `findop` 重新计算双发下降、单发下降和单发复飞配平。当前风场接口标记为预留，非零风速会被明确拒绝。
 
+前端联调可选用[12组已测参考参数](resources/validation/engine_failure_20261111/frontend_presets.json)。其中的运行ID仅用于结果追溯；在新部署上需调用配平接口生成本机的 `preparation_id`。`prompt_version`、`query` 使用 JSON `null` 或省略，不要传字符串 `"string"`、`"null"`。
+
+135 ft/s测试点配平未收敛。1500 ft目标测试在模型端需要105步，可能超出当前Dify单轮迭代预算；这两组不作为默认演示参数。已通过的有限组合不代表全部参数范围均已验证。
+
 ## 首次验证
 
 服务启动后依次检查：
@@ -119,7 +126,15 @@ GET  /api/runs/{run_id}
 
 - 当前 MATLAB Engine 和 Simulink 环境采用单实例串行运行。
 - 同一时间只能有一个实验真正占用仿真模型。
-- 后端默认只监听 `127.0.0.1:8000`；已验证 Dify Docker 可通过 `host.docker.internal:8000` 回调，无需暴露到局域网。
+- 启动脚本默认监听 `127.0.0.1:8000`。供Dify Docker或其他电脑访问时，在项目根目录设置 `PYTHONPATH=src`，使用 `python -m uvicorn multiflight.main:app --host 0.0.0.0 --port 8000` 启动，并让Dify工具回调该后端。
 - `/reset` 和 `/step` 是供 Dify 工具调用的兼容接口。
 - 原始 Agent 动作和增稳器实际施加动作分别记录，以便提示词回归分析。
 - 真实运行产物保存在 `data/runs/<run_id>/`。
+
+## 回归验证
+
+```powershell
+python -m pytest -q
+```
+
+真实MATLAB参数回归使用 `scripts/batch_engine_failure_regression.py`，须独占共享MATLAB会话。统计绘图另需安装 `requirements-analysis.txt`；步骤及冻结结果见[验证快照](resources/validation/engine_failure_20261111/README.md)。

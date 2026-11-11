@@ -1,0 +1,212 @@
+[
+  {
+    "case_id": "C01",
+    "parameters": {
+      "initial_altitude_ft": 500.0,
+      "initial_airspeed_ft_s": 148.911745406824,
+      "engine_failure_altitude_ft": 300.0,
+      "go_around_altitude_ft": 200.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C02",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 135.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C03",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 140.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C04",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 150.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C05",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 160.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C06",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 165.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 150.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C07",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 140.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 100.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C08",
+    "parameters": {
+      "initial_altitude_ft": 400.0,
+      "initial_airspeed_ft_s": 150.0,
+      "engine_failure_altitude_ft": 250.0,
+      "go_around_altitude_ft": 100.0,
+      "target_altitude_ft": 400.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C09",
+    "parameters": {
+      "initial_altitude_ft": 700.0,
+      "initial_airspeed_ft_s": 160.0,
+      "engine_failure_altitude_ft": 400.0,
+      "go_around_altitude_ft": 300.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C10",
+    "parameters": {
+      "initial_altitude_ft": 1000.0,
+      "initial_airspeed_ft_s": 165.0,
+      "engine_failure_altitude_ft": 800.0,
+      "go_around_altitude_ft": 700.0,
+      "target_altitude_ft": 1000.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C11",
+    "parameters": {
+      "initial_altitude_ft": 1000.0,
+      "initial_airspeed_ft_s": 140.0,
+      "engine_failure_altitude_ft": 800.0,
+      "go_around_altitude_ft": 200.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C12",
+    "parameters": {
+      "initial_altitude_ft": 600.0,
+      "initial_airspeed_ft_s": 145.0,
+      "engine_failure_altitude_ft": 350.0,
+      "go_around_altitude_ft": 220.0,
+      "target_altitude_ft": 800.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C13",
+    "parameters": {
+      "initial_altitude_ft": 500.0,
+      "initial_airspeed_ft_s": 150.0,
+      "engine_failure_altitude_ft": 490.0,
+      "go_around_altitude_ft": 480.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C14",
+    "parameters": {
+      "initial_altitude_ft": 1000.0,
+      "initial_airspeed_ft_s": 150.0,
+      "engine_failure_altitude_ft": 800.0,
+      "go_around_altitude_ft": 700.0,
+      "target_altitude_ft": 1500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 300.0
+    },
+    "expected_event": "GO_AROUND_SUCCESS"
+  },
+  {
+    "case_id": "C15",
+    "parameters": {
+      "initial_altitude_ft": 500.0,
+      "initial_airspeed_ft_s": 148.911745406824,
+      "engine_failure_altitude_ft": 300.0,
+      "go_around_altitude_ft": 200.0,
+      "target_altitude_ft": 500.0,
+      "wind_speed_ft_s": 0.0,
+      "wind_direction_deg": 0.0,
+      "max_simulation_time_s": 60.0
+    },
+    "expected_event": "TIME_LIMIT_REACHED"
+  }
+]

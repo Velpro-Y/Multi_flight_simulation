@@ -1,0 +1,101 @@
+{
+  "C03": {
+    "run_id": "run-edd992a67402",
+    "status": "succeeded",
+    "error": null,
+    "evaluation": {
+      "scene_id": "engine_failure",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "c1152106dea740754e19c94ea8e156ec56d798b5d630a25889ef494e82137652",
+      "passed": true,
+      "hard_gates": {
+        "has_steps": true,
+        "format_valid": true,
+        "phase_order_valid": true,
+        "no_early_go_around": true,
+        "control_direction_valid": true,
+        "state_safe": true,
+        "completed": true
+      },
+      "failure_labels": [],
+      "metrics": {
+        "steps": 46,
+        "smoothness": 0.004145,
+        "saturation_rate": 0.0,
+        "score": 99.917
+      },
+      "phase_trace": [
+        "TWIN_DESCENT",
+        "ENGINE_OUT_DESCENT",
+        "GO_AROUND",
+        "SUCCESS"
+      ]
+    },
+    "final_state": {
+      "time": 92.0,
+      "altitude": 409.3615775531057,
+      "airspeed": 141.86419760234548,
+      "vertical_speed": 4.892875130679499,
+      "roll": 0.04927779253918282,
+      "pitch": 0.17775909833370648,
+      "yaw": 0.41948733535626076,
+      "roll_rate": -0.03885382461696447,
+      "pitch_rate": -0.00042887715050334767,
+      "yaw_rate": 0.0017598141182991096,
+      "left_engine_fail": true,
+      "flight_phase": "SUCCESS"
+    },
+    "min_altitude_ft": 113.7591139823793
+  },
+  "C09": {
+    "case_id": "C09",
+    "run_id": "run-b9ad78d61d2e",
+    "status": "succeeded",
+    "error": null,
+    "steps": 47,
+    "evaluation": {
+      "scene_id": "engine_failure",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "f267fbc1486ba76bd7d2b9cb25320ab7509f0a50cc26d30b27591490a1d36b7d",
+      "passed": true,
+      "hard_gates": {
+        "has_steps": true,
+        "format_valid": true,
+        "phase_order_valid": true,
+        "no_early_go_around": true,
+        "control_direction_valid": true,
+        "state_safe": true,
+        "completed": true
+      },
+      "failure_labels": [],
+      "metrics": {
+        "steps": 47,
+        "smoothness": 0.003838,
+        "saturation_rate": 0.0,
+        "score": 99.923
+      },
+      "phase_trace": [
+        "TWIN_DESCENT",
+        "ENGINE_OUT_DESCENT",
+        "GO_AROUND",
+        "SUCCESS"
+      ]
+    },
+    "final_state": {
+      "time": 94.0,
+      "altitude": 508.28733777545494,
+      "airspeed": 160.93312366787825,
+      "vertical_speed": 4.585570194661329,
+      "roll": 0.03301765103357797,
+      "pitch": 0.15300601372148548,
+      "yaw": -0.014798535697080707,
+      "roll_rate": -0.0811189712147559,
+      "pitch_rate": 0.007742149142436183,
+      "yaw_rate": -0.04181939112519355,
+      "left_engine_fail": true,
+      "flight_phase": "SUCCESS"
+    },
+    "minimum_altitude_ft": 269.22542341767684,
+    "max_abs_roll_deg": 7.416396782678195
+  }
+}

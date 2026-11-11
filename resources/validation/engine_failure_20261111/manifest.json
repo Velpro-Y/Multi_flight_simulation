@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-11",
+  "source_run_directory": "data/runs/scene1-regression-20261111",
+  "export": "Selected result fields; C02 error stack reduced to the original solver failure reason. No raw samples transformed.",
+  "files_sha256": {
+    "frontend_presets.json": "90e383daff37a979d9f5c2c60220edb886e37944a99e34aa94d8978b48cbcf38",
+    "matrix.json": "8e614f4be53bccc4e405020a7b20f11face148c227fd51982a4053d1efe9ad85",
+    "pipeline_verification.json": "046e8d62194cf64551df0237fcb2486b9f5102cd6ef0c65965e9d1417eb348ff",
+    "README.md": "bc095c89b118bfa288fea70b0f39283f24b2e715a7f234619ac3746b2398f792",
+    "regression_overview.png": "b38b769325ca671074820c37b18a3212726e14fb48d79ce6be4eaf54cf06e0a0",
+    "summary.csv": "f1150715d5ff41dc2688dc6d1eaa444a9647cea1e7fea77561938a4ae36d1f6e",
+    "summary.json": "9e0ae311b4811754761fd48674c4958f281ffd4a0f471688b9c6afe769b11d8f"
+  },
+  "controller_source_sha256": {
+    "src/multiflight/settings.py": "cf7e79ccd63ed9a0271531be1922255e9c0eca2070128f87ad00cc279c831c2b",
+    "src/multiflight/simulation/flight_env.py": "aee658661d84e74afaece34189e2204f49da937c8553fb1a5e1f8bfdb6ac5219",
+    "src/multiflight/simulation/engine_failure_control.py": "6777d488ebfab3e761c9437984dafc1a16113afe62a7bd3c9e0e0fee54826c7f",
+    "src/multiflight/simulation/flight_safety.py": "8b5445ac6626cddf5c103d883b84bb49f1b627f43fb36b46fb52dde5316c0b23",
+    "simulink/beaver_agent_env.slx": "4ce153da04d3a97e9710f901a320ec18882d46c02e5fe7d5bd25e7a6158576a1"
+  },
+  "text_hash_policy": "UTF-8 text with CRLF normalized to LF; binary files hashed as stored"
+}

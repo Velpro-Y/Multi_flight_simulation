@@ -8,7 +8,7 @@ __pycache__/
 data/*.db
 data/runs/
 data/logs/
-data/server*.log
+data/*.log
 data/prompt_registry.json
 simulink/beaver_state.mat
 simulink/slprj/
