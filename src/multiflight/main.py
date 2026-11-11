@@ -29,6 +29,7 @@ from .schemas import (
 from .services.optimization_service import OptimizationService
 from .services.preparation_service import PreparationError, PreparationService
 from .services.run_service import RunService
+from .services.ground_demo import GroundDemoRequest, GroundDemoService
 from .settings import LOG_LEVEL
 from .simulation import SimulationManager
 from .trimming import MatlabTrimProvider
@@ -93,6 +94,14 @@ optimization_service = OptimizationService(
     runs=run_service,
     executor=executor,
 )
+
+ground_demo_service = GroundDemoService(jobs, dify, executor, execution_lock)
+
+
+@app.post("/api/ground-direction/demo", status_code=202, tags=["ground-direction"])
+def start_ground_demo(request: GroundDemoRequest) -> dict[str, Any]:
+    """单次Agent决策/手动角度输入，完成低速地面转向验证；通过/api/runs/{id}查询。"""
+    return ground_demo_service.start(request)
 
 
 @app.get("/health", tags=["system"])

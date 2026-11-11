@@ -33,6 +33,8 @@
 
 ## 运行架构
 
+本分支 `codex/scene3-ground-direction` 另外包含场景三地面方向控制试验：扩展模型位于 `simulink03/`，默认使用提示词0.2.0，每0.5秒仿真时间由Dify决定前轮角和左右油门。使用说明及当前实验范围见[场景三实时决策说明](docs/SCENE3_REALTIME_DECISION.md)。这些改动尚未合入 `develop`。
+
 ```text
 调用方 → 本项目 /api/runs
              ↓

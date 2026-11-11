@@ -11,7 +11,7 @@ def test_scene_registry_exposes_expected_statuses() -> None:
     assert statuses == {
         "engine_failure": "enabled",
         "ground_deceleration": "reserved",
-        "ground_direction": "planned",
+        "ground_direction": "enabled",
     }
 
 

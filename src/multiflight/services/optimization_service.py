@@ -81,7 +81,7 @@ class OptimizationService:
 
             reports: list[dict[str, Any]] = []
             definitions = self.candidates.generate(
-                candidate_count, baseline_eval.get("failure_labels", [])
+                candidate_count, baseline_eval.get("failure_labels", []), scene_id=scene_id
             )
             for index, definition in enumerate(definitions, start=1):
                 version = _candidate_version(champion["version"], index, job_id)

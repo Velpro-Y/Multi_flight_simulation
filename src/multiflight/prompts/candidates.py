@@ -56,8 +56,20 @@ class CandidateGenerator:
     )
 
     def generate(
-        self, count: int, failure_labels: Optional[list[str]] = None
+        self, count: int, failure_labels: Optional[list[str]] = None,
+        scene_id: str = "engine_failure",
     ) -> list[CandidateDefinition]:
+        if scene_id == "ground_direction":
+            return [CandidateDefinition(
+                name="ground_stage_guard", description="强化地面加速、转弯和终止阶段检查",
+                addendum="每次决策前先检查flight_phase和done。READY/ACCELERATE未达到5kn不得转向；"
+                         "旧版TURN_READY和新版TURN按各自受保护契约输出动作。"
+                         "done=true后停止。只引用实测值，不将油门0描述为发动机关闭。",
+            ), CandidateDefinition(
+                name="ground_report_guard", description="约束地面结果报告和工具调用次数",
+                addendum="严格遵循当前受保护契约的每步格式和推进间隔，不自行减少观测次数。"
+                         "只报告实测航向、轮角、速度和接地状态，不推断未记录的发动机状态。",
+            )][:count]
         ordered: list[CandidateDefinition] = []
         if "CONTROL_SIGN_ERROR" in (failure_labels or []):
             ordered.append(self.CONTROL_SIGN_CANDIDATE)

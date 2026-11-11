@@ -27,8 +27,8 @@ class ParameterRegistry:
             return {
                 "scene_id": scene_id,
                 "schema_version": SCHEMA_VERSION,
-                "runnable": False,
-                "reason": "场景三模型扩展尚未交付",
+                "runnable": True,
+                "reason": "默认0.2.0：静止起步、目标5kn、75度右转，Dify每0.5秒仿真时间决定前轮角和左右油门；0.1.0保留两阶段兼容",
                 "groups": [],
                 "constraints": [],
             }

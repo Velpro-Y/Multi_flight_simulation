@@ -1,4 +1,20 @@
 {
+  "ground_direction": {
+    "published": "0.2.0",
+    "versions": {
+      "0.2.0": {
+        "version": "0.2.0", "status": "published", "name": "ground_realtime_baseline",
+        "description": "每0.5秒由Dify直接决定左右油门和前轮角，无PI代驾",
+        "addendum": "", "created_from": "0.1.0",
+        "regression_report": {"passed": true, "validation_run": "run-54b2b6bae411", "kind": "new_control_protocol_validation"}
+      },
+      "0.1.0": {
+        "version": "0.1.0", "status": "superseded", "name": "ground_stage_baseline",
+        "description": "场景三两阶段Agent工具决策基线，75度右转掉头",
+        "addendum": "", "created_from": null, "regression_report": null
+      }
+    }
+  },
   "engine_failure": {
     "published": "1.0.0",
     "versions": {

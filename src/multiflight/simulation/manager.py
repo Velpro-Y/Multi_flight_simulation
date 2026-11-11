@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Optional
 
 from .flight_env import FlightEnv
+from .ground_env import GroundEnv
+from .ground_realtime import GroundRealtimeEnv
 
 
 ProgressCallback = Callable[[str, int, dict[str, Any]], None]
@@ -52,8 +54,13 @@ class SimulationManager:
 
     def reset(self) -> dict[str, Any]:
         with self._lock:
+            if isinstance(self._env, GroundRealtimeEnv):
+                raise RuntimeError("实时决策模式由后端管理reset，Agent只能返回动作JSON")
             self.ensure_manual_run()
-            self._env = FlightEnv(
+            env_type = GroundEnv if self._scene_id == "ground_direction" else FlightEnv
+            if self._scene_id == "ground_direction" and (self._configuration or {}).get("mode") == "realtime":
+                env_type = GroundRealtimeEnv
+            self._env = env_type(
                 run_id=self._active_run_id or "manual",
                 configuration=self._configuration,
             )
@@ -110,6 +117,8 @@ class SimulationManager:
 
     def finish_run(self) -> None:
         with self._lock:
+            if self._env is not None and hasattr(self._env, "close"):
+                self._env.close()
             self._progress_callback = None
             self._active_run_id = None
             self._scene_id = None

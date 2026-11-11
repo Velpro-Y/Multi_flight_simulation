@@ -8,6 +8,8 @@ __pycache__/
 data/*.db
 data/runs/
 data/logs/
+data/review/
+data/.review/
 data/*.log
 data/prompt_registry.json
 simulink/beaver_state.mat
@@ -19,4 +21,6 @@ simulink/*.mat
 simulink/**/*.mat
 simulink/*.asv
 simulink/**/*.asv
+simulink03/slprj/
+simulink03/*.slxc
 

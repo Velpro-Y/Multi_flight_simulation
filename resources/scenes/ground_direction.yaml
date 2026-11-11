@@ -1,18 +1,28 @@
 scene_id: ground_direction
 name: 地面方向控制
-version: 0.1.0
-status: planned
-description: 地面滑跑方向控制场景，待地面接触、轮胎侧向力与转向模块完成后启用。
-unavailable_reason: 地面方向控制动力学和转向执行机构尚未迁移实现。
+version: 0.2.0
+status: enabled
+description: 默认由Dify每0.5秒仿真时间直接决定左右油门和前轮角，执行75度右转掉头；兼容旧两阶段版本。
 initialization:
   altitude_ft: 0.0
-  trim_profile: ground_direction_planned
-phases: []
-observation_fields: []
-action_fields: []
+  trim_profile: ground_static_support
+phases:
+  - id: READY
+    description: 静止起步
+  - id: ACCELERATE
+    description: 逐步加速，每步由Dify决定油门
+  - id: TURN
+    description: 达到5kn后逐步转向，每步由Dify决定前轮角和油门
+  - id: TURN_READY
+    description: 已达到5kn，等待Agent转弯指令
+  - id: SUCCESS
+    description: 达到75度轮角并完成接近180度掉头
+observation_fields: [time, speed_kn, heading_deg, x_m, y_m, on_ground, flight_phase]
+action_fields: [aileron, elevator, rudder, throttle_left, throttle_right]
 protected_prompt_blocks:
   - base_role
-optimizable_prompt_blocks: []
+  - ground_contract
+optimizable_prompt_blocks: [scene_policy, decision_checklist]
 safety:
-  max_steps: 1
-expected_phase_order: []
+  max_steps: 40
+expected_phase_order: [READY, ACCELERATE, TURN, SUCCESS]

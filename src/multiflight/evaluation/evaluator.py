@@ -36,6 +36,8 @@ class RunEvaluator:
         prompt_hash: str,
         runtime_context: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
+        if scene.scene_id == "ground_direction":
+            return _evaluate_ground(scene, records, prompt_version, prompt_hash)
         steps = [item for item in records if item.get("kind") == "step"]
         parameters = (runtime_context or {}).get("normalized_parameters", {})
         profiles = (runtime_context or {}).get("trim", {}).get("profiles", {})
@@ -258,6 +260,102 @@ class RunEvaluator:
             "completed": "TIMEOUT",
         }
         return sorted({mapping[name] for name, passed in gates.items() if not passed})
+
+
+def _evaluate_ground(scene, records, version, prompt_hash):
+    if version.startswith("0.2."):
+        return _evaluate_ground_realtime(scene, records, version, prompt_hash)
+    steps = [r for r in records if r.get("kind") == "step"]
+    reset = [r for r in records if r.get("kind") == "reset"]
+    trace = [r["result"]["state"]["flight_phase"] for r in records]
+    simulations = [r["result"].get("simulation", {}) for r in steps]
+    continuity = False
+    if len(simulations) == 2:
+        a, b = simulations
+        # The first logged point after restoring an operating point can be a
+        # solver step after the checkpoint (observed ~10us), not at its exact time.
+        # Bound both the gap and physically possible motion, rather than compare
+        # two samples at different times using a single unitless tolerance.
+        try:
+            gap = b["start_time_s"] - a["duration_s"]
+            position_bound = max(a["final_speed_kn"], b["initial_speed_kn"]) * 0.5144444444 * max(gap, 0) + 1e-5
+            continuity = (-1e-9 <= gap <= 0.001 and
+                          abs(b["initial_x_m"]-a["final_x_m"]) <= position_bound and
+                          abs(b["initial_y_m"]-a["final_y_m"]) <= position_bound and
+                          abs(b["initial_speed_kn"]-a["final_speed_kn"]) <= 10*max(gap, 0)+1e-5)
+        except (KeyError, TypeError):
+            continuity = False
+    final = simulations[-1] if simulations else {}
+    gates = {
+        "reset_and_two_steps": len(reset) == 1 and len(steps) == 2,
+        "format_valid": RunEvaluator._format_valid(steps),
+        "phase_order_valid": trace == ["READY", "TURN_READY", "SUCCESS"],
+        "accelerated_before_turn": bool(simulations and simulations[0].get("final_speed_kn", 0) >= 5),
+        "state_continuity": continuity,
+        "state_safe": bool(simulations) and all(s.get("safe") and s.get("all_wheels_contact") for s in simulations),
+        "actual_75_reached": final.get("max_actual_front_wheel_angle_deg", 0) >= 74.9,
+        "completed": bool(final.get("passed") and final.get("reverse_motion") and steps[-1]["result"].get("done")),
+    }
+    labels = {"reset_and_two_steps": "TOOL_SEQUENCE_INVALID", "format_valid": "FORMAT_INVALID",
+              "phase_order_valid": "PHASE_INVALID", "accelerated_before_turn": "PHASE_EARLY",
+              "state_continuity": "STATE_DISCONTINUITY", "state_safe": "STATE_UNSAFE",
+              "actual_75_reached": "ANGLE_NOT_REACHED", "completed": "TIMEOUT"}
+    return {"scene_id": scene.scene_id, "prompt_version": version, "prompt_hash": prompt_hash,
+            "passed": all(gates.values()), "hard_gates": gates,
+            "failure_labels": sorted({labels[k] for k, v in gates.items() if not v}),
+            "phase_trace": trace,
+            "metrics": {"steps": len(steps), "score": 100*sum(gates.values())/len(gates),
+                        "heading_change_deg": final.get("heading_change_deg"),
+                        "time_s": final.get("duration_s"), "min_turn_speed_kn": final.get("min_turn_speed_kn")},
+            "scope": "固定75度右转、两阶段Agent工具决策功能验证，非原试验点完整验收"}
+
+
+def _evaluate_ground_realtime(scene, records, version, prompt_hash):
+    from ..simulation.ground_realtime import GroundRealtimeAction
+    steps = [r for r in records if r.get("kind") == "step"]
+    reset = [r for r in records if r.get("kind") == "reset"]
+    valid = True
+    early = False
+    continuity = True
+    previous = {"time_s": 0, "x_m": 0, "y_m": 0, "speed_kn": 0}
+    for record in steps:
+        try:
+            action = GroundRealtimeAction.model_validate(record["raw_action"])
+            early |= action.nose_wheel_deg > 0 and not record["state_before"].get("reached_5kn")
+        except Exception:
+            valid = False
+        s = record["result"].get("simulation", {})
+        try:
+            gap = s["start_time_s"]-previous["time_s"]
+            motion = max(previous["speed_kn"], s["initial_speed_kn"])*0.5144444444*max(gap, 0)+1e-5
+            continuity &= (-1e-9 <= gap <= .001 and
+                           abs(s["initial_x_m"]-previous["x_m"]) <= motion and
+                           abs(s["initial_y_m"]-previous["y_m"]) <= motion and
+                           0 < s["time_s"]-previous["time_s"] <= .5001)
+        except (KeyError, TypeError):
+            continuity = False
+        previous = s
+    sims = [r["result"].get("simulation", {}) for r in steps]
+    final = sims[-1] if sims else {}
+    gates = {
+        "reset_and_multiple_decisions": len(reset) == 1 and 3 <= len(steps) <= 40,
+        "format_valid": valid and bool(steps), "no_early_steering": not early,
+        "state_continuity": continuity and bool(steps),
+        "state_safe": bool(sims) and all(s.get("safe") and s.get("on_ground") for s in sims),
+        "actual_75_reached": any(s.get("max_wheel_deg", 0) >= 74.9 for s in sims),
+        "completed": bool(final.get("complete") and steps[-1]["result"].get("done")),
+    }
+    trace = []
+    for record in records:
+        phase = record["result"]["state"]["flight_phase"]
+        if not trace or trace[-1] != phase: trace.append(phase)
+    return {"scene_id": scene.scene_id, "prompt_version": version, "prompt_hash": prompt_hash,
+            "passed": all(gates.values()), "hard_gates": gates,
+            "failure_labels": [k.upper() for k, ok in gates.items() if not ok], "phase_trace": trace,
+            "metrics": {"steps": len(steps), "score": 100*sum(gates.values())/len(gates),
+                        "time_s": final.get("time_s"), "heading_change_deg": final.get("heading_deg"),
+                        "max_wheel_deg": max([s.get("max_wheel_deg", 0) for s in sims], default=0)},
+            "scope": "Dify每0.5秒仿真时间直接决定油门和前轮角，无PI代驾；非墙钟硬实时"}
 
 
 def _trim_for_phase(

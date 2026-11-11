@@ -25,6 +25,21 @@ class PromptStore:
         if not self.registry_file.exists():
             self.registry_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(self.seed_file, self.registry_file)
+        # Add newly supported scenes without replacing existing versions/results.
+        with self._lock:
+            data = self._load_unlocked()
+            seeds = json.loads(self.seed_file.read_text(encoding="utf-8"))
+            missing = {key: value for key, value in seeds.items() if key not in data}
+            if missing:
+                data.update(missing)
+            changed = bool(missing)
+            for scene_id, seed in seeds.items():
+                for version, record in seed["versions"].items():
+                    if version not in data[scene_id]["versions"]:
+                        data[scene_id]["versions"][version] = record
+                        changed = True
+            if changed:
+                self._save_unlocked(data)
 
     def list_versions(self, scene_id: str) -> dict[str, Any]:
         data = self._load()
