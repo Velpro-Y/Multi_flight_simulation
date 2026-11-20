@@ -1,0 +1,44 @@
+{
+  "run_id": "run-b8ae51974dc2",
+  "status": "succeeded",
+  "error": null,
+  "evaluation": {
+    "scene_id": "ground_direction",
+    "prompt_version": "0.3.0",
+    "prompt_hash": "6b53efa5a09dee55916aafdd6adc87ba96c845ab0e73a8e27cb2e3c488aa3679",
+    "passed": true,
+    "hard_gates": {
+      "reset_and_multiple_decisions": true,
+      "format_valid": true,
+      "no_early_steering": true,
+      "state_continuity": true,
+      "state_safe": true,
+      "actual_75_reached": true,
+      "completed": true,
+      "brake_routing_valid": true,
+      "steering_authority_valid": true
+    },
+    "failure_labels": [],
+    "phase_trace": [
+      "READY",
+      "ACCELERATE",
+      "TURN",
+      "SUCCESS"
+    ],
+    "metrics": {
+      "steps": 17,
+      "score": 100.0,
+      "time_s": 8.120000000000001,
+      "heading_change_deg": 177.09682487633157,
+      "max_wheel_deg": 75
+    },
+    "scope": "Dify逐步决定油门、前轮角及刹车，保留随速限角和互斥自动刹车规则"
+  },
+  "dify": {
+    "mode": "per_step_decision",
+    "decisions": 17,
+    "model_calls": 17,
+    "reused_decisions": 0,
+    "decisions_file": "E:\\Multi_flight_simulation\\data\\runs\\run-b8ae51974dc2\\decisions.json"
+  }
+}

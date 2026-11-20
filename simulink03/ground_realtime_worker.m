@@ -1,14 +1,31 @@
-function ground_realtime_worker(folder)
+function ground_realtime_worker(folder,protocol)
 % One MATLAB process, continuous operating-point state, direct LLM controls.
+brakeProtocol=nargin>1 && strcmp(protocol,'brake');
 model='beaver_agent_env_ground_static_preserved';
+if brakeProtocol, model='beaver_agent_env_ground_brake'; end
 load_system(fullfile(fileparts(mfilename('fullpath')),[model '.slx']));
 cleanup=onCleanup(@() close_system(model,0));
 mw=get_param(model,'ModelWorkspace'); g=getVariable(mw,'GroundStatic');
 g.InitialPosition=[0 0 -1.44]; g.InitialVelocity=[0 0 0];
 g.InitialAttitude=[0 0 0]; g.InitialAngularRates=[0 0 0];
 g.PowerOff=0; g.ParkingBrakeCmd=0; assignin(mw,'GroundStatic',g);
+if brakeProtocol
+    g.BrakeSystemMode=0; g.BrakeMode=0; g.LeftBrakeManual=0; g.RightBrakeManual=0;
+    g.AutoBrakePreArm=0; g.AutoBrakeMinLevel=0.15;
+    assignin(mw,'GroundStatic',g);
+end
 for n={'AileronCmd','ElevatorCmd','RudderCmd','Throttle_Left','Throttle_Right','RtLeft','RtRight','RtNose'}
     assignin('base',n{1},0);
+end
+if brakeProtocol
+    bindings={...
+        '/GroundContactTireSteering/RunwayDeviationBrakeController/ManualLeftBrake','RtBrakeLeft';...
+        '/GroundContactTireSteering/RunwayDeviationBrakeController/ManualRightBrake','RtBrakeRight';...
+        '/GroundContactTireSteering/BrakeSystemSelector/BrakeSystemModeSetting','RtBrakeMode';...
+        '/GroundContactTireSteering/BrakeSystemSelector/PreArmSetting','RtBrakeArmed'};
+    for k=1:size(bindings,1)
+        assignin('base',bindings{k,2},0); set_param([model bindings{k,1}],'Value',bindings{k,2});
+    end
 end
 set_param([model '/Throttle_Left'],'Value','RtLeft');
 set_param([model '/Throttle_Right'],'Value','RtRight');
@@ -72,6 +89,16 @@ for seq=1:40
         in=in.setVariable('RtLeft',request.throttle_left);
         in=in.setVariable('RtRight',request.throttle_right);
         in=in.setVariable('RtNose',deg2rad(request.nose_wheel_deg));
+        if brakeProtocol
+            assert(request.brake_left>=0 && request.brake_left<=1);
+            assert(request.brake_right>=0 && request.brake_right<=1);
+            assert(ismember(request.brake_system_mode,[0 1]));
+            assert(request.brake_system_mode==0 || (request.brake_left==0 && request.brake_right==0));
+            in=in.setVariable('RtBrakeLeft',request.brake_left);
+            in=in.setVariable('RtBrakeRight',request.brake_right);
+            in=in.setVariable('RtBrakeMode',double(request.brake_system_mode));
+            in=in.setVariable('RtBrakeArmed',double(request.auto_brake_armed));
+        end
         in=in.setModelParameter('StopTime',num2str(time+0.5,17));
         if ~isempty(checkpoint), in=in.setInitialState(checkpoint); end
         out=sim(in); checkpoint=out.xFinal;
@@ -94,6 +121,21 @@ for seq=1:40
             'max_speed_kn',max(hypot(u,v))/0.5144444444, ...
             'trajectory',struct('time_s',t(idx),'x_m',x(idx),'y_m',y(idx), ...
             'heading_deg',rad2deg(psi(idx)),'speed_kn',hypot(u(idx),v(idx))/0.5144444444));
+        if brakeProtocol
+            left=vec(out.get('leftMainBrakeCommand')); right=vec(out.get('rightMainBrakeCommand'));
+            active=vec(out.get('autoBrakeActive')); lim=rad2deg(vec(out.get('noseSteeringLimitRad')));
+            assert(numel(left)==numel(t) && numel(right)==numel(t) && numel(lim)==numel(wheel));
+            result.brake_left=left(end); result.brake_right=right(end);
+            result.brake_system_mode=request.brake_system_mode;
+            result.auto_brake_armed=logical(request.auto_brake_armed);
+            result.auto_brake_active=logical(active(end));
+            result.auto_brake_min_level=g.AutoBrakeMinLevel;
+            result.steering_limit_deg=lim(end);
+            result.max_steering_excess_deg=max(abs(wheel)-lim);
+            result.max_brake_left=max(left); result.max_brake_right=max(right);
+            result.trajectory.brake_left=left(idx); result.trajectory.brake_right=right(idx);
+            result.trajectory.steering_limit_deg=lim(idx);
+        end
         writeJson(fullfile(folder,sprintf('response_%03d.json',seq)),result);
         if complete || ~safe, break; end
     catch exception

@@ -28,7 +28,7 @@ class ParameterRegistry:
                 "scene_id": scene_id,
                 "schema_version": SCHEMA_VERSION,
                 "runnable": True,
-                "reason": "默认0.2.0：静止起步、目标5kn、75度右转，Dify每0.5秒仿真时间决定前轮角和左右油门；0.1.0保留两阶段兼容",
+                "reason": "默认0.2.0；0.3.0候选增加左右刹车、自动刹车模式和随速限角观测。通过prompt_version显式选择，动作格式见/api/ground-direction/action-schemas",
                 "groups": [],
                 "constraints": [],
             }

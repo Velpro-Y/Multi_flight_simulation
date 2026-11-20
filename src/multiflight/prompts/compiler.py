@@ -57,6 +57,9 @@ class PromptCompiler:
         if scene.scene_id == "ground_direction" and version.startswith("0.2."):
             protected = [("ground_realtime_contract", self._read("ground_realtime_contract.md"))]
             scene_text = self._read("scenes/ground_direction_realtime.md")
+        if scene.scene_id == "ground_direction" and version.startswith("0.3."):
+            protected = [("ground_brake_contract", self._read("ground_brake_contract.md"))]
+            scene_text = self._read("scenes/ground_direction_brake.md")
         if scene.scene_id == "engine_failure":
             context = _engine_failure_context(runtime_context)
             protected.append(

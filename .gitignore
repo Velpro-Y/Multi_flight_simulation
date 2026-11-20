@@ -10,6 +10,7 @@ data/runs/
 data/logs/
 data/review/
 data/.review/
+data/reports/
 data/*.log
 data/prompt_registry.json
 simulink/beaver_state.mat
@@ -23,4 +24,6 @@ simulink/*.asv
 simulink/**/*.asv
 simulink03/slprj/
 simulink03/*.slxc
+simulink03/*.autosave
+simulink03/*.asv
 

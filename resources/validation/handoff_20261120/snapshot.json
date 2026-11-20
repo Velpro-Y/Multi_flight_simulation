@@ -1,0 +1,231 @@
+{
+  "handoff_date": "2026-11-20",
+  "captured_at_utc": "2026-11-20T03:49:47.995974+00:00",
+  "repository": "https://github.com/Velpro-Y/Multi_flight_simulation.git",
+  "branch": "codex/scene3-ground-direction",
+  "base_commit_before_delivery": "131b83f17027d0461fa03911b2df5283f8e14b7f",
+  "remote_refs_before_delivery": {
+    "origin/main": "80297ac6a3daf84f97c388ae7565deb94d526027",
+    "origin/develop": "5b20454a5ee66ae799ce36a53b4d66382058ae32",
+    "origin/codex/scene3-ground-direction": "131b83f17027d0461fa03911b2df5283f8e14b7f"
+  },
+  "delivery_commit_lookup": "git log -1 -- AGENT_HANDOFF.md docs/PROJECT_STATUS_20261120.md",
+  "runtime_observation": {
+    "backend_health": "connection_refused",
+    "dify_localhost": "connection_refused",
+    "configured_app_key_present": true,
+    "no_services_started_by_this_audit": true
+  },
+  "unit_tests": {
+    "command": "python -m pytest tests -q",
+    "python": "C:\\Users\\velpro\\.conda\\envs\\simulink\\python.exe",
+    "python_version": "3.9.23",
+    "passed": 41,
+    "failed": 0,
+    "scope": "Existing unit/protocol tests; no new Dify or MATLAB simulation calls"
+  },
+  "prompts": {
+    "engine_failure": {
+      "published": "1.0.0",
+      "versions": {
+        "1.0.0": {
+          "status": "published",
+          "created_from": null
+        },
+        "1.0.1-c1.355bfb": {
+          "status": "candidate",
+          "created_from": "1.0.0"
+        },
+        "1.0.1-c1.6e1e2a": {
+          "status": "candidate",
+          "created_from": "1.0.0"
+        },
+        "1.0.1-c2.6e1e2a": {
+          "status": "candidate",
+          "created_from": "1.0.0"
+        }
+      }
+    },
+    "ground_direction": {
+      "published": "0.2.0",
+      "versions": {
+        "0.1.0": {
+          "status": "superseded",
+          "created_from": null
+        },
+        "0.2.0": {
+          "status": "published",
+          "created_from": "0.1.0"
+        },
+        "0.3.0": {
+          "status": "candidate",
+          "created_from": "0.2.0"
+        }
+      }
+    }
+  },
+  "historical_optimization_jobs": [
+    {
+      "id": "opt-15c849355bfb",
+      "status": "succeeded",
+      "payload": {
+        "scene_id": "engine_failure",
+        "candidate_count": 1,
+        "auto_publish": false
+      },
+      "result": {
+        "scene_id": "engine_failure",
+        "baseline_run_id": "opt-15c849355bfb-baseline",
+        "baseline_version": "1.0.0",
+        "candidates": [
+          {
+            "version": "1.0.1-c1.355bfb",
+            "run_id": "opt-15c849355bfb-candidate-1",
+            "regression": {
+              "passed": false,
+              "improved": false,
+              "checks": {
+                "protected_content_unchanged": true,
+                "candidate_hard_gates_pass": true,
+                "no_new_failure_labels": true,
+                "score_not_lower": false
+              },
+              "baseline": {
+                "prompt_version": "1.0.0",
+                "passed": true,
+                "score": 99.928,
+                "failure_labels": []
+              },
+              "candidate": {
+                "prompt_version": "1.0.1-c1.355bfb",
+                "passed": true,
+                "score": 99.899,
+                "failure_labels": []
+              },
+              "decision": "reject"
+            }
+          }
+        ],
+        "recommended_version": null,
+        "published_version": null
+      },
+      "created_at": "2026-10-25T15:21:49.141141+00:00"
+    },
+    {
+      "id": "opt-95bb026e1e2a",
+      "status": "succeeded",
+      "payload": {
+        "scene_id": "engine_failure",
+        "candidate_count": 2,
+        "auto_publish": false
+      },
+      "result": {
+        "scene_id": "engine_failure",
+        "baseline_run_id": "opt-95bb026e1e2a-baseline",
+        "baseline_version": "1.0.0",
+        "candidates": [
+          {
+            "version": "1.0.1-c1.6e1e2a",
+            "run_id": "opt-95bb026e1e2a-candidate-1",
+            "regression": {
+              "passed": true,
+              "improved": true,
+              "checks": {
+                "protected_content_unchanged": true,
+                "candidate_hard_gates_pass": true,
+                "no_new_failure_labels": true,
+                "score_not_lower": true
+              },
+              "baseline": {
+                "prompt_version": "1.0.0",
+                "passed": false,
+                "score": 87.072,
+                "failure_labels": [
+                  "CONTROL_SIGN_ERROR"
+                ]
+              },
+              "candidate": {
+                "prompt_version": "1.0.1-c1.6e1e2a",
+                "passed": true,
+                "score": 99.861,
+                "failure_labels": []
+              },
+              "decision": "recommend_publish"
+            }
+          },
+          {
+            "version": "1.0.1-c2.6e1e2a",
+            "run_id": "opt-95bb026e1e2a-candidate-2",
+            "regression": {
+              "passed": true,
+              "improved": true,
+              "checks": {
+                "protected_content_unchanged": true,
+                "candidate_hard_gates_pass": true,
+                "no_new_failure_labels": true,
+                "score_not_lower": true
+              },
+              "baseline": {
+                "prompt_version": "1.0.0",
+                "passed": false,
+                "score": 87.072,
+                "failure_labels": [
+                  "CONTROL_SIGN_ERROR"
+                ]
+              },
+              "candidate": {
+                "prompt_version": "1.0.1-c2.6e1e2a",
+                "passed": true,
+                "score": 99.863,
+                "failure_labels": []
+              },
+              "decision": "recommend_publish"
+            }
+          }
+        ],
+        "recommended_version": "1.0.1-c1.6e1e2a",
+        "published_version": null
+      },
+      "created_at": "2026-10-27T05:21:55.482814+00:00"
+    }
+  ],
+  "evidence": {
+    "scene1": "resources/validation/engine_failure_20261111/pipeline_verification.json",
+    "scene1_matrix": "resources/validation/engine_failure_20261111/summary.json",
+    "brake_model": "resources/validation/ground_brake_20261116/physical_summary.json",
+    "brake_protocol": "resources/validation/ground_brake_20261116/protocol_summary.json",
+    "brake_dify": "resources/validation/ground_brake_20261116/dify_brake_coverage.json",
+    "large_angle_local": "data/runs/ground-large-angle-20261110/comparison.json",
+    "dify_data_local": "data/runs/dify_handoff_20261112/README.md"
+  },
+  "sha256": {
+    "AGENT_HANDOFF.md": "bd81cc2115272b6556137977ee8ba3c4b4e2b58afdead91009e77968092a4776",
+    "docs/PROJECT_STATUS_20261120.md": "eedc2df6fca9d59aee23b37596eda23e9c4b39b3e2ddae7c213cb2217b588c37",
+    "src/multiflight/schemas.py": "84dbb5366a2542949fd3d9a83cf5c84c5089b4aedaca9c57237e7ca7b060a404",
+    "src/multiflight/settings.py": "cf7e79ccd63ed9a0271531be1922255e9c0eca2070128f87ad00cc279c831c2b",
+    "src/multiflight/services/run_service.py": "d3a973a676518d66dab0bd4a09e9f0f8ca9387cf93e833ff459acdb4c45365d6",
+    "src/multiflight/simulation/ground_realtime.py": "f89220ea2733213879b7eeac269662a8c50405cf568356fed44c0c21e6dcd72d",
+    "src/multiflight/simulation/engine_failure_control.py": "6777d488ebfab3e761c9437984dafc1a16113afe62a7bd3c9e0e0fee54826c7f",
+    "src/multiflight/prompts/compiler.py": "1f1730c25b3562c936546bd453e075927b61d37e7efd2c32035c721b473abf05",
+    "src/multiflight/prompts/candidates.py": "045ea2e16d3961db73ccc5197f18c17cd680da80d58f2249e3a1dc2f491483ac",
+    "src/multiflight/services/optimization_service.py": "c4398ba9d73a14d89170f783a7db5d39b4e23c9af20f7e29a50757098d0d4b1b",
+    "simulink03/ground_realtime_worker.m": "da0eb9c23856f39ec8d26a29e08b4b2293d01f072fbdcd2c8d91e07c8df54043",
+    "simulink03/prepare_ground_brake_model.m": "d34e9e04eeb99fd05267c7f55d30f5f46ca72eeab1b12c952d3d9681965ecada",
+    "simulink03/verify_ground_brake_model.m": "8c29313f7f1da6d25e405c5919b1867548a19830f061394b87753444894dcf7c",
+    "simulink/beaver_agent_env.slx": "4ce153da04d3a97e9710f901a320ec18882d46c02e5fe7d5bd25e7a6158576a1",
+    "simulink03/beaver_agent_env_ground_static_preserved.slx": "f7c789bc2a0eaf125cf5cd72996074b26a553f440e6b2030e9090ca5d2a99f6d",
+    "simulink03/beaver_agent_env_ground_brake.slx": "c4a32e0a38fdf98ab69994584add8225c95d2642399ded98f88514fd521d4ea7",
+    "新增差动刹车和自动刹车/beaver_agent_env_ground_autobrake_steering.slx": "5d50e8c084a114a016257cfa2171ee5650d932992ebb95bf63f4d19408e1f55d"
+  },
+  "local_presentation_outputs": [
+    "data/reports/digital-pilot-20261117/output/新增内容.pptx"
+  ],
+  "excluded_from_git": [
+    ".env",
+    "data/multiflight.db",
+    "data/prompt_registry.json",
+    "data/runs/",
+    "data/reports/",
+    "member source archive and generated caches"
+  ]
+}

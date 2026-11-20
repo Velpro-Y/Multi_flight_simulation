@@ -2,6 +2,14 @@
 
 独立的多场景飞行仿真 Demo。所有运行代码、Simulink 模型、提示词、Dify 配置和回归验证都位于本项目；`E:\6DOF_Airframe` 仅作为迁移来源，不参与运行。
 
+## 项目交接入口
+
+- [智能体接手指南](AGENT_HANDOFF.md)：环境、分支、调用步骤、参数和继续开发要求。
+- [截至2026-11-20的工作清单与交付索引](docs/PROJECT_STATUS_20261120.md)：完成事项、验证证据、数据与历史文档定位。
+- [交接核查快照](resources/validation/handoff_20261120/snapshot.json)：本次测试和关键版本记录。
+
+场景三刹车扩展0.3.0保留为显式选择的候选版本，默认发布版本仍为0.2.0。早期计划和两阶段流程说明按交接文档标注的适用范围阅读。
+
 `develop` 当前提供场景一参数化单发失效复飞：支持前端参数校验、三阶段动态配平、提示词自动选择、Dify决策、仿真及自动评估。控制更新周期为2秒，已完成低速复飞修复和15组参数回归。
 
 `main` 和 `v0.1.0` 标签保留固定参数基线。场景三在 `codex/scene3-ground-direction` 分支开发，尚未合入 `develop`。
@@ -13,6 +21,7 @@
 - [v0.2.0 开发计划与分工](docs/DEVELOPMENT_PLAN.md)
 - [前端 API 交付规范](docs/FRONTEND_API.md)
 - [场景三模型接口与交付规范](docs/SCENE3_MODEL_CONTRACT.md)
+- [场景三刹车模型集成与验证](docs/SCENE3_BRAKE_INTEGRATION.md)
 - [验收与合并检查表](docs/ACCEPTANCE_CHECKLIST.md)
 - [场景一控制修复说明](docs/ENGINE_FAILURE_CONTROL_FIX.md)
 - [场景一参数回归结果](docs/ENGINE_FAILURE_REGRESSION.md)

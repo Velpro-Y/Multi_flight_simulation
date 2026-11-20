@@ -1,0 +1,15 @@
+{
+  "run_id": "ground-brake-protocol-2e09b65e5d",
+  "passed": true,
+  "checks": {
+    "accelerated_to_5kn": true,
+    "left_routing": true,
+    "left_safe": true,
+    "auto_routing": true,
+    "auto_safe": true,
+    "right_routing": true,
+    "right_safe": true,
+    "continuous_time": true
+  },
+  "dify_calls": 0
+}

@@ -2,6 +2,11 @@
   "ground_direction": {
     "published": "0.2.0",
     "versions": {
+      "0.3.0": {
+        "version": "0.3.0", "status": "candidate", "name": "ground_brake_candidate",
+        "description": "修正刹车选择器，增加左右刹车、自动刹车选择和随速限角观测",
+        "addendum": "", "created_from": "0.2.0", "regression_report": null
+      },
       "0.2.0": {
         "version": "0.2.0", "status": "published", "name": "ground_realtime_baseline",
         "description": "每0.5秒由Dify直接决定左右油门和前轮角，无PI代驾",

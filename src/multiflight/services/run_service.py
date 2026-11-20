@@ -17,7 +17,7 @@ from ..prompts import PromptCompiler, PromptStore
 from ..scene_registry import SceneRegistry
 from ..settings import RUN_DIR
 from ..simulation import SimulationManager
-from ..simulation.ground_realtime import GroundRealtimeAction
+from ..simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction
 
 
 DEFAULT_QUERY = (
@@ -128,8 +128,9 @@ class RunService:
             progress=0.02,
             message=f"已加载提示词 {artifact.version}，等待Dify Agent调用仿真工具",
         )
-        realtime = scene_id == "ground_direction" and artifact.version.startswith("0.2.")
-        configuration = {"mode": "realtime"} if realtime else preparation
+        brake_protocol = scene_id == "ground_direction" and artifact.version.startswith("0.3.")
+        realtime = scene_id == "ground_direction" and artifact.version.startswith(("0.2.", "0.3."))
+        configuration = {"mode": "realtime", "brake_protocol": brake_protocol} if realtime else preparation
         self.simulator.begin_run(
             run_id,
             scene_id,
@@ -158,14 +159,15 @@ class RunService:
                         else:
                             decision = self.dify.run_agent(
                                 scene_prompt=artifact.text,
-                                query="最新真实状态：" + json.dumps(observation, ensure_ascii=False) +
-                                      "。只输出下一步三个控制字段的JSON。",
+                                query=(("本次任务要求：" + query + "\n") if query else "") +
+                                      "最新真实状态：" + json.dumps(observation, ensure_ascii=False) +
+                                      ("。只输出下一步七个控制字段的JSON。" if brake_protocol else "。只输出下一步三个控制字段的JSON。"),
                                 user=run_id,
                             )
-                        answer = decision["answer"].strip()
-                        if answer.startswith("```"):
-                            answer = answer.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-                        action = GroundRealtimeAction.model_validate_json(answer)
+                        # Keep even a malformed model response for diagnosis.
+                        (folder / f"dify_response_{index+1:03d}.json").write_text(_json(decision), encoding="utf-8")
+                        action_type = GroundBrakeAction if brake_protocol else GroundRealtimeAction
+                        action = _parse_realtime_action(decision["answer"], action_type)
                         decisions.append({"index": index+1, "state": result["state"], "dify": decision,
                                           "action": action.model_dump(),
                                           "source": "reused_dify_after_state_match" if index < len(replay) else "live_dify"})
@@ -267,6 +269,25 @@ class RunService:
         paths["evaluation"].write_text(_json(evaluation), encoding="utf-8")
         paths["dify"].write_text(_json(dify_result), encoding="utf-8")
         return {name: str(path) for name, path in paths.items()}
+
+
+def _parse_realtime_action(answer, action_type):
+    """Allow surrounding prose/fences, but require one unambiguous action."""
+    decoder = json.JSONDecoder()
+    candidates = []
+    required = {"nose_wheel_deg", "throttle_left", "throttle_right"}
+    for i, char in enumerate(answer):
+        if char != "{":
+            continue
+        try:
+            obj, _ = decoder.raw_decode(answer[i:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict) and required.issubset(obj):
+            candidates.append(obj)
+    if len(candidates) != 1:
+        raise ValueError("Dify响应必须包含且仅包含一个明确的动作JSON对象")
+    return action_type.model_validate(candidates[0])
 
 
 def _json(value: Any) -> str:

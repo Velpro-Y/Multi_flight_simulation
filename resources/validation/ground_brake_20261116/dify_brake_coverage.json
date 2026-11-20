@@ -1,0 +1,48 @@
+{
+  "run_id": "run-d38f47576572",
+  "status": "succeeded",
+  "error": null,
+  "query": "本轮验证刹车控制：达到5kn后，若manual_brake_used=false，依据实时状态使用一次非零右主轮手动刹车并观察响应；若auto_brake_used=false，切换自动模式并预位，读取实际auto_brake_active和左右0.15确认；两项累计标记均true后释放刹车并恢复手动模式，完成右转掉头。时机和大小由你决定，避免刹停。",
+  "manual_right_brake_exercised": true,
+  "auto_brake_exercised": true,
+  "evaluation": {
+    "scene_id": "ground_direction",
+    "prompt_version": "0.3.0",
+    "prompt_hash": "6b53efa5a09dee55916aafdd6adc87ba96c845ab0e73a8e27cb2e3c488aa3679",
+    "passed": true,
+    "hard_gates": {
+      "reset_and_multiple_decisions": true,
+      "format_valid": true,
+      "no_early_steering": true,
+      "state_continuity": true,
+      "state_safe": true,
+      "actual_75_reached": true,
+      "completed": true,
+      "brake_routing_valid": true,
+      "steering_authority_valid": true
+    },
+    "failure_labels": [],
+    "phase_trace": [
+      "READY",
+      "ACCELERATE",
+      "TURN",
+      "SUCCESS"
+    ],
+    "metrics": {
+      "steps": 18,
+      "score": 100.0,
+      "time_s": 8.91,
+      "heading_change_deg": 177.32418518665216,
+      "max_wheel_deg": 75
+    },
+    "scope": "Dify逐步决定油门、前轮角及刹车，保留随速限角和互斥自动刹车规则"
+  },
+  "dify": {
+    "mode": "per_step_decision",
+    "decisions": 18,
+    "model_calls": 18,
+    "reused_decisions": 0,
+    "decisions_file": "E:\\Multi_flight_simulation\\data\\runs\\run-d38f47576572\\decisions.json"
+  },
+  "coverage_passed": true
+}

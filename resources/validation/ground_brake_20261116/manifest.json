@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-16",
+  "prompt_version": "0.3.0",
+  "status": "candidate",
+  "published_version": "0.2.0",
+  "model_sha256": {
+    "新增差动刹车和自动刹车/beaver_agent_env_ground_autobrake_steering.slx": "5d50e8c084a114a016257cfa2171ee5650d932992ebb95bf63f4d19408e1f55d",
+    "simulink03/beaver_agent_env_ground_brake.slx": "c4a32e0a38fdf98ab69994584add8225c95d2642399ded98f88514fd521d4ea7"
+  },
+  "reports": {
+    "physical_summary.json": "data/runs/ground-brake-verification-20261116/summary.json",
+    "protocol_summary.json": "data/runs/ground-brake-protocol-2e09b65e5d/summary.json",
+    "dify_uturn.json": "data/runs/ground-brake-verification-20261116/dify_verification.json",
+    "dify_brake_coverage.json": "data/runs/run-d38f47576572/brake_coverage.json"
+  },
+  "attempts": [
+    {
+      "run_id": "ground-brake-protocol-720a840b9e",
+      "result": "failed",
+      "reason": "MATLAB initial startup exceeded original 90s timeout; extended brake-protocol reset timeout to 180s"
+    },
+    {
+      "run_id": "run-b8ae51974dc2",
+      "result": "succeeded",
+      "scope": "U-turn; no brakes exercised"
+    },
+    {
+      "run_id": "run-44f0efd99e0a",
+      "result": "failed",
+      "reason": "Prose before action JSON rejected; parser fixed; original attempt retained"
+    },
+    {
+      "run_id": "run-d38f47576572",
+      "result": "succeeded",
+      "scope": "Manual right brake, automatic brake, and U-turn"
+    }
+  ]
+}

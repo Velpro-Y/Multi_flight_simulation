@@ -263,7 +263,7 @@ class RunEvaluator:
 
 
 def _evaluate_ground(scene, records, version, prompt_hash):
-    if version.startswith("0.2."):
+    if version.startswith(("0.2.", "0.3.")):
         return _evaluate_ground_realtime(scene, records, version, prompt_hash)
     steps = [r for r in records if r.get("kind") == "step"]
     reset = [r for r in records if r.get("kind") == "reset"]
@@ -311,7 +311,9 @@ def _evaluate_ground(scene, records, version, prompt_hash):
 
 
 def _evaluate_ground_realtime(scene, records, version, prompt_hash):
-    from ..simulation.ground_realtime import GroundRealtimeAction
+    from ..simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction
+    brake_protocol = version.startswith("0.3.")
+    action_type = GroundBrakeAction if brake_protocol else GroundRealtimeAction
     steps = [r for r in records if r.get("kind") == "step"]
     reset = [r for r in records if r.get("kind") == "reset"]
     valid = True
@@ -320,7 +322,7 @@ def _evaluate_ground_realtime(scene, records, version, prompt_hash):
     previous = {"time_s": 0, "x_m": 0, "y_m": 0, "speed_kn": 0}
     for record in steps:
         try:
-            action = GroundRealtimeAction.model_validate(record["raw_action"])
+            action = action_type.model_validate(record["raw_action"])
             early |= action.nose_wheel_deg > 0 and not record["state_before"].get("reached_5kn")
         except Exception:
             valid = False
@@ -345,6 +347,24 @@ def _evaluate_ground_realtime(scene, records, version, prompt_hash):
         "actual_75_reached": any(s.get("max_wheel_deg", 0) >= 74.9 for s in sims),
         "completed": bool(final.get("complete") and steps[-1]["result"].get("done")),
     }
+    if brake_protocol:
+        def brake_routing_ok(record):
+            try:
+                action = GroundBrakeAction.model_validate(record["raw_action"])
+                sim = record["result"]["simulation"]
+                left, right = float(sim["brake_left"]), float(sim["brake_right"])
+                if sim["brake_system_mode"] != action.brake_system_mode:
+                    return False
+                if action.brake_system_mode == 1:
+                    expected = float(sim["auto_brake_min_level"]) if sim["auto_brake_active"] else 0.
+                    return abs(left-expected) < 1e-6 and abs(right-expected) < 1e-6
+                return abs(left-action.brake_left) < 1e-6 and abs(right-action.brake_right) < 1e-6
+            except (KeyError, TypeError, ValueError):
+                return False
+        gates["brake_routing_valid"] = bool(steps) and all(brake_routing_ok(r) for r in steps)
+        gates["steering_authority_valid"] = bool(sims) and all(
+            isfinite(s.get("max_steering_excess_deg", float("inf")))
+            and s["max_steering_excess_deg"] <= 1e-5 for s in sims)
     trace = []
     for record in records:
         phase = record["result"]["state"]["flight_phase"]
@@ -355,7 +375,8 @@ def _evaluate_ground_realtime(scene, records, version, prompt_hash):
             "metrics": {"steps": len(steps), "score": 100*sum(gates.values())/len(gates),
                         "time_s": final.get("time_s"), "heading_change_deg": final.get("heading_deg"),
                         "max_wheel_deg": max([s.get("max_wheel_deg", 0) for s in sims], default=0)},
-            "scope": "Dify每0.5秒仿真时间直接决定油门和前轮角，无PI代驾；非墙钟硬实时"}
+            "scope": ("Dify逐步决定油门、前轮角及刹车，保留随速限角和互斥自动刹车规则"
+                      if brake_protocol else "Dify每0.5秒仿真时间直接决定油门和前轮角，无PI代驾；非墙钟硬实时")}
 
 
 def _trim_for_phase(

@@ -32,6 +32,7 @@ from .services.run_service import RunService
 from .services.ground_demo import GroundDemoRequest, GroundDemoService
 from .settings import LOG_LEVEL
 from .simulation import SimulationManager
+from .simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction
 from .trimming import MatlabTrimProvider
 
 
@@ -102,6 +103,12 @@ ground_demo_service = GroundDemoService(jobs, dify, executor, execution_lock)
 def start_ground_demo(request: GroundDemoRequest) -> dict[str, Any]:
     """单次Agent决策/手动角度输入，完成低速地面转向验证；通过/api/runs/{id}查询。"""
     return ground_demo_service.start(request)
+
+
+@app.get("/api/ground-direction/action-schemas", tags=["ground-direction"])
+def ground_action_schemas() -> dict[str, Any]:
+    return {"0.2.0": GroundRealtimeAction.model_json_schema(),
+            "0.3.0": GroundBrakeAction.model_json_schema()}
 
 
 @app.get("/health", tags=["system"])
