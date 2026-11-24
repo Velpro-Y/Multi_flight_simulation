@@ -11,7 +11,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ..settings import PROJECT_ROOT, RUN_DIR
-from ..schemas import GroundDirectionParameters
+from ..schemas import GroundDirectionParameters, GroundCorrectionParameters
 
 
 class GroundRealtimeAction(BaseModel):
@@ -34,10 +34,24 @@ class GroundBrakeAction(GroundRealtimeAction):
         return self
 
 
+class GroundCorrectionAction(GroundBrakeAction):
+    nose_wheel_deg: Literal[0] = 0
+    brake_system_mode: Literal[0] = 0
+    auto_brake_armed: Literal[False] = False
+
+    @model_validator(mode="after")
+    def symmetric_thrust(self):
+        if abs(self.throttle_left-self.throttle_right) > 1e-8:
+            raise ValueError("差动刹车纠偏试验要求左右油门相同")
+        return self
+
+
 class GroundRealtimeEnv:
     def __init__(self, run_id, configuration=None):
-        self.brake_protocol = bool((configuration or {}).get("brake_protocol"))
-        self.parameters = GroundDirectionParameters.model_validate(
+        self.correction_protocol = bool((configuration or {}).get("correction_protocol"))
+        self.brake_protocol = self.correction_protocol or bool((configuration or {}).get("brake_protocol"))
+        parameter_type = GroundCorrectionParameters if self.correction_protocol else GroundDirectionParameters
+        self.parameters = parameter_type.model_validate(
             (configuration or {}).get("normalized_parameters", {})
         )
         self.max_steps = math.ceil(self.parameters.max_simulation_time_s / .5)
@@ -48,6 +62,7 @@ class GroundRealtimeEnv:
         self.log = None
         self.sequence = 0
         self.reached_5 = False
+        self.correction_triggered = False
 
     def _wait(self, name, timeout=90):
         path = self.folder / name
@@ -68,7 +83,7 @@ class GroundRealtimeEnv:
             self.parameters.model_dump_json(), encoding="utf-8"
         )
         quote = lambda p: str(p).replace("'", "''")
-        protocol = ", 'brake'" if self.brake_protocol else ""
+        protocol = ", 'correction'" if self.correction_protocol else ", 'brake'" if self.brake_protocol else ""
         command = (f"addpath('{quote(PROJECT_ROOT / 'simulink03')}'); "
                    f"ground_realtime_worker('{quote(self.folder)}'{protocol})")
         self.log = (self.folder / "matlab.log").open("w", encoding="utf-8")
@@ -84,9 +99,20 @@ class GroundRealtimeEnv:
                       "heading_deg": 0, "yaw_rate_deg_s": 0, "wheel_deg": 0,
                       "x_m": 0, "y_m": 0, "roll_deg": 0,
                       "on_ground": True, "reached_5kn": self.reached_5,
-                      "target_nose_wheel_deg": self.parameters.target_nose_wheel_deg,
-                      "target_heading_change_deg": self.parameters.target_heading_change_deg,
                       "max_simulation_time_s": self.parameters.max_simulation_time_s}
+        if self.correction_protocol:
+            deviation = self.parameters.initial_lateral_deviation_ft
+            self.correction_triggered = abs(deviation) > 50
+            heading = self.parameters.initial_heading_deg
+            self.state.update(flight_phase="DEVIATED" if self.correction_triggered else "MONITOR",
+                              heading_deg=heading, x_m=0, y_m=deviation*.3048,
+                              lateral_deviation_ft=deviation,
+                              lateral_velocity_m_s=self.parameters.initial_speed_kn*.5144444444*math.sin(math.radians(heading)),
+                              correction_triggered=self.correction_triggered, stable_duration_s=0,
+                              trigger_deviation_ft=50, target_deviation_ft=30)
+        else:
+            self.state.update(target_nose_wheel_deg=self.parameters.target_nose_wheel_deg,
+                              target_heading_change_deg=self.parameters.target_heading_change_deg)
         if self.brake_protocol:
             self.state.update(brake_left=0., brake_right=0., brake_system_mode=0,
                               auto_brake_armed=False, auto_brake_active=False,
@@ -97,14 +123,16 @@ class GroundRealtimeEnv:
         return self.state
 
     def step(self, raw_action):
-        action_type = GroundBrakeAction if self.brake_protocol else GroundRealtimeAction
+        action_type = GroundCorrectionAction if self.correction_protocol else GroundBrakeAction if self.brake_protocol else GroundRealtimeAction
         action = action_type.model_validate(raw_action)
-        if action.nose_wheel_deg > self.parameters.target_nose_wheel_deg:
+        if not self.correction_protocol and action.nose_wheel_deg > self.parameters.target_nose_wheel_deg:
             raise ValueError("前轮指令超过本次实验的目标转角")
         if self.state is None or self.state["flight_phase"] in {"SUCCESS", "FAILED"}:
             raise ValueError("Reset required or run already finished")
         if not self.reached_5 and action.nose_wheel_deg != 0:
             raise ValueError("Must reach 5kn before steering")
+        if self.correction_protocol and not self.correction_triggered and (action.brake_left > 0 or action.brake_right > 0):
+            raise ValueError("横向偏差尚未超过50ft，不得提前施加刹车")
         self.sequence += 1
         path = self.folder / f"request_{self.sequence:03d}.json"
         temporary = path.with_suffix(".tmp")
@@ -115,14 +143,23 @@ class GroundRealtimeEnv:
         done = (sim["complete"] or not sim["safe"] or self.sequence >= self.max_steps
                 or sim["time_s"] >= self.parameters.max_simulation_time_s - 1e-8)
         phase = "SUCCESS" if sim["complete"] else "FAILED" if done else "TURN" if self.reached_5 else "ACCELERATE"
+        if self.correction_protocol:
+            self.correction_triggered = bool(sim["correction_triggered"])
+            if not done:
+                phase = "CORRECTING" if self.correction_triggered else "MONITOR"
         manual_used = self.state.get("manual_brake_used", False)
         auto_used = self.state.get("auto_brake_used", False)
         self.state = {"flight_phase": phase, "time": sim["time_s"],
                       **{k: sim[k] for k in ["speed_kn", "heading_deg", "yaw_rate_deg_s", "wheel_deg", "x_m", "y_m", "roll_deg", "on_ground"]},
                       "reached_5kn": self.reached_5,
-                      "target_nose_wheel_deg": self.parameters.target_nose_wheel_deg,
-                      "target_heading_change_deg": self.parameters.target_heading_change_deg,
                       "max_simulation_time_s": self.parameters.max_simulation_time_s}
+        if self.correction_protocol:
+            self.state.update({k: sim[k] for k in ["lateral_deviation_ft", "lateral_velocity_m_s",
+                              "correction_triggered", "stable_duration_s"]})
+            self.state.update(trigger_deviation_ft=50, target_deviation_ft=30)
+        else:
+            self.state.update(target_nose_wheel_deg=self.parameters.target_nose_wheel_deg,
+                              target_heading_change_deg=self.parameters.target_heading_change_deg)
         applied = action.model_dump()
         if self.brake_protocol:
             self.state.update({k: sim[k] for k in ["brake_left", "brake_right", "brake_system_mode",

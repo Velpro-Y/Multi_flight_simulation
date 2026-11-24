@@ -32,7 +32,7 @@ from .services.run_service import RunService
 from .services.ground_demo import GroundDemoRequest, GroundDemoService
 from .settings import LOG_LEVEL
 from .simulation import SimulationManager
-from .simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction
+from .simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction, GroundCorrectionAction
 from .trimming import MatlabTrimProvider
 
 
@@ -108,7 +108,8 @@ def start_ground_demo(request: GroundDemoRequest) -> dict[str, Any]:
 @app.get("/api/ground-direction/action-schemas", tags=["ground-direction"])
 def ground_action_schemas() -> dict[str, Any]:
     return {"0.2.0": GroundRealtimeAction.model_json_schema(),
-            "0.3.0": GroundBrakeAction.model_json_schema()}
+            "0.3.0": GroundBrakeAction.model_json_schema(),
+            "0.4.0": GroundCorrectionAction.model_json_schema()}
 
 
 @app.get("/health", tags=["system"])
@@ -165,10 +166,10 @@ def get_scene(scene_id: str) -> dict[str, Any]:
 
 
 @app.get("/api/scenarios/{scene_id}/parameters", tags=["scenes"])
-def get_scene_parameters(scene_id: str) -> dict[str, Any]:
+def get_scene_parameters(scene_id: str, experiment: Optional[str] = None) -> dict[str, Any]:
     try:
         scenes.get(scene_id)
-        return parameter_registry.schema(scene_id)
+        return parameter_registry.schema(scene_id, experiment)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -250,6 +251,10 @@ def start_run(request: RunRequest = Body(openapi_examples={
         "scene_id": "ground_direction", "prompt_version": "0.3.0", "parameters": {
             "initial_speed_kn": 0, "target_nose_wheel_deg": 75,
             "target_heading_change_deg": 177, "max_simulation_time_s": 20}}},
+    "brake_correction": {"summary": "场景三：试验点2-4差动刹车纠偏", "value": {
+        "scene_id": "ground_direction", "prompt_version": "0.4.0", "parameters": {
+            "experiment": "brake_correction", "initial_speed_kn": 100,
+            "initial_lateral_deviation_ft": 45, "initial_heading_deg": 2, "max_simulation_time_s": 20}}},
 })) -> dict[str, Any]:
     try:
         scene = scenes.get(request.scene_id)

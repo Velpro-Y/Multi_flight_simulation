@@ -1,0 +1,73 @@
+{
+  "run_id": "run-e9ca84f93122",
+  "script": "scripts/plot_brake_correction.py",
+  "source_sha256": {
+    "data\\runs\\run-e9ca84f93122\\records.json": "bc7f175b0825d71dadd2ab276230e160150bf3e62e0b1b5c6bf90e057c7c1c14",
+    "data\\runs\\run-e9ca84f93122\\evaluation.json": "dfe32cbb1f769b9a33b7247c7e46c4dba566e15b2cf5cf60306cddc502bd3d7e",
+    "data\\runs\\run-e9ca84f93122\\decisions.json": "b8ee188f34408c557aedb4a2f9c9c97526d64fdb99c55896a0baf2c2cf7ae72c",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_001.json": "41bde98cfe3ef4b99eafc3f1888d1a178ea975341fcb4c33a8d7e535079c2c45",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_002.json": "1b4d73922d51c51042ea146c73db556436d91c027b567b09f01a2aff1703531a",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_003.json": "f44043b0b8831a5977f121ced7f4230459ab5158977eb8e6228e90d011480814",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_004.json": "4ab80f7e960be1d6fd5a55a1564f0d1cefbbd52bfe1e663144b9feb876dc2251",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_005.json": "3a79016d63be82d30d3573926db887af7c399d4df9a6b9d555a91ba568f8d7cb",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_006.json": "7b8c31797cce3fe2767122e8379bca855f1a5a92e1b9fe1733a43f90cd908855",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_007.json": "628ae2d377abed10b74251e1b9bef64ac80805dd91dd24e121dabbb55a8adfee",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_008.json": "3971cf87aef054f58ccd9f6ad4574d9947f243fc35ce7f1501fb666fe5f9b39c",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_009.json": "0114b4d2accba21e72f7a70d708abf3dc6e0f503285c84ab7a03c923b818964b",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_010.json": "9f098aad4afaab7867b410bec7e4e759e4bae8abd1d3e5dd969702d71504d591",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_011.json": "5b34d73f4741eaa012e09f803b447a2be157c6e3e6fe02e1d2b5271951ddae44",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_012.json": "7858710a5677a65654ac438687c499673036acde6b01273a363da0d0ef44929e",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_013.json": "3bc22d4c821a32dbf07304e84954a67c40eedd87d03120ddf6a948c24982380a",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_014.json": "7f63aa8d506e5784d2344ef14e633936e6c74df38cf9f3b4210e0e58801c30bc",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_015.json": "5b49524d1e18acdf664bbfb65c815cc7fbb6ae8e04eaa3824b3802460b60ec26",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_016.json": "a10d5619619d5b4e3268e307e12852a018a3c401c1330db1956e2cfbf2da8aaa",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_017.json": "c057efc3fa0c9792383ed875533d48ede68f5fbef36561bfdfb736e623733412",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_018.json": "2a6bcdb78c0819ed3bc947e9153c885c0562ead979225cddde760a8872bb3219",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_019.json": "9953d3a44e704ff1395f2da0fe7026fb6aff50cc72cc980d0eb19b3d5c9b7b85",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_020.json": "51c3f5ed846f47ca3594ae90ce4edd0f312d28c8d46f8a10f24a6fceaa643db0",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_021.json": "e778d9eef8a889b1f7ef83258a00c68e214f83124b9d3e23ccd43affb9912d9a",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_022.json": "cbb4221e9afd3b14a245f8a9966fa7be05a0a695747aa65babc903751bca5eb3",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_023.json": "0caa88f70ce62e051a4ef043c89d86f337b530929facb14f2b81139387170688",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_024.json": "dff11a4e569b70e209a3ae7b47be20ad5c77fff046e311ff7b70a0fdf2585b84",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_025.json": "dd3b001d2f8f73a8189a1741dab2a8b38676351256a0604e4ec8bd14a5ffce20",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_026.json": "89f9a2ee4c665ecf6d0b350fc0ca232b5db7c8cbc27dbed52e5acc91b41fc5e4",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_027.json": "9daf1f232713bd5ced2534d45ed9938792801f7e2dcbda2d910b99fa5da92616",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_028.json": "fcdc032381aa1a7255139bc57e32ce2637e3c9472591bdf7dd71ec7c9c69411e",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_029.json": "f95d8c98df74b6bafa734a70c07daed1bfd1831b992e1cb74d3880cb99f0e500",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_030.json": "fbb9cc1eddc8a4bcb7150a25fad627af3d2cb2b2b656eefdd6e4db32452eb56c",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_031.json": "73388635ddb091662de4b4d6a4715979cb1a862830f108308a95ba6401468431",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_032.json": "3e2f37c94a74ad9227aeb38c65b3265f4066345098bdf0358f592178627fd2e4",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_033.json": "3a8de73b99af4a3291a2d4c22d3011640f14b47d52099e4703e8af2524461685",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_034.json": "1913472dd1d26445c1a51a903183ea166e3282d9db32b0866e99328ba8e5c037",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_035.json": "0c11a8c262d3ea55c7c7c64c718e045c6403e822532d52428d3ec402fe074778",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_036.json": "23c66dfcf4a8c2758f87881aa675c485929c072776e21be5bffe20c5b3d58014",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_037.json": "2c66b2eb9038d0e0d439443574bbc86871dff2992f2181a03a8c38ff1982b039",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_038.json": "035b34c4232b47fac8cc61c79832a21479f0a238cb5f6aaa16f97c6c6f33939c",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_039.json": "ae56448818e75bad69a192eaacb9168665cd596c9f7f29db8309f1d5783fe6bd",
+    "data\\runs\\run-e9ca84f93122\\realtime-f5cc8ce4\\response_040.json": "9d366000e2e559e53d182c27776d1dadc8b25f4cc7caa4e77622e6f071c95231"
+  },
+  "script_sha256": "f49bd025af0bcbbfaff0de3054be4237acbb95a70c060d9a855b4c62e5ed09ee",
+  "image_metadata": {
+    "pixels": [
+      2880,
+      1710
+    ],
+    "dpi": [
+      180.00979999999998,
+      180.00979999999998
+    ]
+  },
+  "transformations": [
+    "Native segments plotted separately; no smoothing or resampling",
+    "Yaw rate shown at actual step endpoints",
+    "Normalized actual brake commands; no inference of calibrated pressure or forces"
+  ],
+  "parameters": {
+    "experiment": "brake_correction",
+    "initial_speed_kn": 100.0,
+    "initial_lateral_deviation_ft": 45.0,
+    "initial_heading_deg": 2.0,
+    "max_simulation_time_s": 20.0
+  },
+  "visual_review": "OK 2026-11-24: inspected actual thresholds, sign, units, brake curves and failed overall status"
+}

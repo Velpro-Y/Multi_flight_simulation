@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 from ..scene_registry import SceneSpec
 from ..settings import PROMPT_DIR
-from ..schemas import EngineFailureParameters, GroundDirectionParameters
+from ..schemas import EngineFailureParameters, GroundDirectionParameters, GroundCorrectionParameters
 from ..settings import (
     ENGINE_OUT_CLIMB_TRIM,
     ENGINE_OUT_DESCENT_TRIM,
@@ -78,6 +78,19 @@ class PromptCompiler:
                 ("runtime_parameters", _runtime_parameter_block(context))
             )
             scene_text = _render_engine_failure_scene(scene_text, context)
+        if scene.scene_id == "ground_direction" and version.startswith("0.4."):
+            parameters = GroundCorrectionParameters.model_validate(
+                (runtime_context or {}).get("normalized_parameters", {})
+            ).model_dump()
+            def render_correction(text):
+                for key, value in parameters.items():
+                    text = text.replace("{{" + key + "}}", f"{value:g}" if isinstance(value, (int, float)) else value)
+                return text
+            protected = [("ground_correction_contract", render_correction(self._read("ground_correction_contract.md"))),
+                         ("ground_runtime_parameters", "# 本次纠偏实验参数\n" + "\n".join(
+                             f"- {key}: {value:g}" if isinstance(value, (int, float)) else f"- {key}: {value}"
+                             for key, value in parameters.items()))]
+            scene_text = self._read("scenes/ground_brake_correction.md")
         blocks = protected + [("scene_policy", scene_text)]
         if addendum.strip():
             blocks.append(("decision_checklist", addendum.strip()))

@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-24",
+  "run_id": "run-e9ca84f93122",
+  "base_commit": "a7c52a6",
+  "prompt_version": "0.4.0",
+  "status": "candidate",
+  "model_calls": 40,
+  "reused_decisions": 0,
+  "tests_passed": 82,
+  "document_core_indicators_passed": true,
+  "overall_passed": false,
+  "scope": "Native 6DOF adaptation of test point 2-4; additional engineering stability requirement is not an original numeric criterion",
+  "transformations": [
+    "Project absolute paths normalized to relative paths in portable JSON",
+    "SVG line-end whitespace stripped; numerical content unchanged",
+    "Compact decisions exclude opaque Dify responses; originals stay in local run folder",
+    "Current evaluation audit adds separate document-core and engineering-stability descriptions; original job and all gate outcomes preserved"
+  ],
+  "raw_source_sha256": {
+    "correction_verification.json": "9880e68eb6b647898b575979f18f52dd1328071ac95655f7c83ac234e13e61fb",
+    "records.json": "bc7f175b0825d71dadd2ab276230e160150bf3e62e0b1b5c6bf90e057c7c1c14",
+    "compiled_prompt.md": "8069a2bd6a7dd88845588cc54a40d30991577f6380ab81d9ba48d9f2aed11ce5",
+    "correction_visualization.png": "0a35fbe98008944d8920d0238c9d81c8ec4ee76aa0b83120974a661f78e51020",
+    "correction_visualization.svg": "ea40e490a986152aeaef5508193381cd86f6b30332f4c88845e8fcd9c58b499b",
+    "correction_trajectory.csv": "cb4f6b84c013ebcec22d07df90ffa00a35157bdf6daa9a0b166c58a415a2d5d2",
+    "correction_figure_manifest.json": "0c6cd66a9740d847f5e79e4fc4b2cc1bba9a77c5741aabfea2b0cb2df5813903"
+  },
+  "code_sha256": {
+    "simulink03/ground_realtime_worker.m": "b92fe71e45fb3fe5f7d6f21efd4d0f4bee06a62de634a32119f56d3e01aadd63",
+    "src/multiflight/simulation/ground_realtime.py": "e557e72caa821146cb43b00a2a35337de0acfe5cc9541109e97132b045c30242",
+    "src/multiflight/evaluation/ground_correction.py": "70315a640aec714ca282b36db0752051670b2e4fe5b0dbd1bf3ac263723c1a44",
+    "resources/prompts/ground_correction_contract.md": "58a3cbfb5e0f25faac8610983f3f4542e500450cbd944f6f1f4096cc211fa183",
+    "resources/prompts/scenes/ground_brake_correction.md": "53f4bb684a999a7ab99e5b44a780dbf86670ddeefdafd1afa85dfea7aa80e221",
+    "scripts/plot_brake_correction.py": "f49bd025af0bcbbfaff0de3054be4237acbb95a70c060d9a855b4c62e5ed09ee"
+  }
+}

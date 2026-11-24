@@ -2,7 +2,7 @@ scene_id: ground_direction
 name: 地面方向控制
 version: 0.2.0
 status: enabled
-description: 由Dify每0.5秒仿真时间直接决策，支持初始地速、目标前轮角、目标航向变化和仿真时限设置；默认75度右转掉头，兼容旧两阶段版本。
+description: 由Dify每0.5秒仿真时间直接决策；0.2/0.3支持参数化低速转向，0.4候选为独立差动刹车纠偏。默认75度右转掉头，兼容旧两阶段版本。
 initialization:
   altitude_ft: 0.0
   trim_profile: ground_static_support

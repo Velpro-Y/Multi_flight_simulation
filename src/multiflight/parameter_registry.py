@@ -4,14 +4,32 @@ from __future__ import annotations
 
 from typing import Any
 
-from .schemas import EngineFailureParameters, GroundDirectionParameters
+from .schemas import EngineFailureParameters, GroundDirectionParameters, GroundCorrectionParameters
 
 
 SCHEMA_VERSION = "0.2.0-draft.1"
 
 
 class ParameterRegistry:
-    def schema(self, scene_id: str) -> dict[str, Any]:
+    def schema(self, scene_id: str, experiment: str | None = None) -> dict[str, Any]:
+        if experiment not in {None, "turn", "brake_correction"}:
+            raise KeyError(f"Unknown experiment: {experiment}")
+        if scene_id == "ground_direction" and experiment == "brake_correction":
+            p = GroundCorrectionParameters()
+            return {"scene_id": scene_id, "experiment": "brake_correction", "schema_version": "0.4.0-candidate",
+                    "runnable": True, "requires_preparation": False, "submit_to": "/api/runs", "parameter_field": "parameters",
+                    "supported_prompt_versions": ["0.4.0"], "parameter_defaults": p.model_dump(),
+                    "groups": [{"id": "correction", "label": "试验点2-4 差动刹车纠偏", "fields": [
+                        _field(name, label, unit, getattr(p, name), lo, hi)
+                        for name, label, unit, lo, hi in [
+                            ("initial_speed_kn", "初始地速", "kn", 100, 100),
+                            ("initial_lateral_deviation_ft", "初始横向偏差", "ft", -80, 80),
+                            ("initial_heading_deg", "初始航向偏差", "deg", -5, 5),
+                            ("max_simulation_time_s", "最长仿真时间", "s", 5, 20)]]}],
+                    "constraints": ["parameters.experiment必须为brake_correction，显式选择0.4.0",
+                                    "超过50ft触发，回到30ft内且姿态/横向运动稳定保持1s",
+                                    "前轮0、左右油门相同、自动刹车关闭，使用左右手动刹车纠偏",
+                                    "使用原生6DOF质量重心，原文大型机配置不直接套用"]}
         if scene_id == "engine_failure":
             return _engine_failure_schema()
         if scene_id == "ground_deceleration":
@@ -33,6 +51,9 @@ class ParameterRegistry:
                 "submit_to": "/api/runs",
                 "parameter_field": "parameters",
                 "supported_prompt_versions": ["0.2.0", "0.3.0"],
+                "experiments": [{"id": "turn", "name": "低速转向", "prompt_versions": ["0.2.0", "0.3.0"]},
+                                {"id": "brake_correction", "name": "差动刹车纠偏", "prompt_versions": ["0.4.0"],
+                                 "parameters_url": "/api/scenarios/ground_direction/parameters?experiment=brake_correction"}],
                 "groups": [{"id": "ground_experiment", "label": "地面状态与目标", "fields": [
                     _field(name, label, unit, getattr(GroundDirectionParameters(), name), lo, hi)
                     for name, label, unit, lo, hi in [

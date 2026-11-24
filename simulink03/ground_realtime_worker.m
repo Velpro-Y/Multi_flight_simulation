@@ -1,8 +1,13 @@
 function ground_realtime_worker(folder,protocol)
 % One MATLAB process, continuous operating-point state, direct LLM controls.
-brakeProtocol=nargin>1 && strcmp(protocol,'brake');
+correctionProtocol=nargin>1 && strcmp(protocol,'correction');
+brakeProtocol=nargin>1 && (strcmp(protocol,'brake') || correctionProtocol);
 config=struct('initial_speed_kn',0,'target_nose_wheel_deg',75, ...
     'target_heading_change_deg',177,'max_simulation_time_s',20);
+if correctionProtocol
+    config=struct('experiment','brake_correction','initial_speed_kn',100, ...
+        'initial_lateral_deviation_ft',45,'initial_heading_deg',2,'max_simulation_time_s',20);
+end
 configFile=fullfile(folder,'configuration.json');
 if exist(configFile,'file')
     supplied=jsondecode(fileread(configFile));
@@ -11,11 +16,17 @@ if exist(configFile,'file')
         if isfield(supplied,names{k}), config.(names{k})=supplied.(names{k}); end
     end
 end
+if correctionProtocol
+    assert(all(isfinite([config.initial_speed_kn config.initial_lateral_deviation_ft ...
+        config.initial_heading_deg config.max_simulation_time_s])));
+    assert(config.initial_speed_kn==100 && abs(config.initial_lateral_deviation_ft)<=80 && abs(config.initial_heading_deg)<=5);
+else
 assert(all(isfinite([config.initial_speed_kn config.target_nose_wheel_deg ...
     config.target_heading_change_deg config.max_simulation_time_s])));
 assert(config.initial_speed_kn>=0 && config.initial_speed_kn<=5);
 assert(config.target_nose_wheel_deg>=20 && config.target_nose_wheel_deg<=75);
 assert(config.target_heading_change_deg>=150 && config.target_heading_change_deg<=180);
+end
 assert(config.max_simulation_time_s>=5 && config.max_simulation_time_s<=20);
 model='beaver_agent_env_ground_static_preserved';
 if brakeProtocol, model='beaver_agent_env_ground_brake'; end
@@ -24,6 +35,11 @@ cleanup=onCleanup(@() close_system(model,0));
 mw=get_param(model,'ModelWorkspace'); g=getVariable(mw,'GroundStatic');
 g.InitialPosition=[0 0 -1.44]; g.InitialVelocity=[config.initial_speed_kn*0.5144444444 0 0];
 g.InitialAttitude=[0 0 0]; g.InitialAngularRates=[0 0 0];
+if correctionProtocol
+    g.InitialPosition=[0 config.initial_lateral_deviation_ft*.3048 -1.44];
+    g.InitialPositionOffset=[0 0 0];
+    g.InitialAttitude=[0 0 deg2rad(config.initial_heading_deg)];
+end
 g.PowerOff=0; g.ParkingBrakeCmd=0; assignin(mw,'GroundStatic',g);
 if brakeProtocol
     g.BrakeSystemMode=0; g.BrakeMode=0; g.LeftBrakeManual=0; g.RightBrakeManual=0;
@@ -79,8 +95,11 @@ add_block('simulink/Signal Routing/Mux',[model '/RtWatch'],'Inputs','2');
 mp=get_param([model '/RtWatch'],'PortHandles');
 add_line(model,sp.Outport(9),mp.Inport(1)); add_line(model,sp.Outport(7),mp.Inport(2));
 add_block('simulink/Discrete/Zero-Order Hold',[model '/RtWatchSample'],'SampleTime','0.01');
-add_block('simulink/User-Defined Functions/Fcn',[model '/RtStopCondition'], ...
-    'Expr',sprintf('(u(1)>=%.17g*pi/180)||(abs(u(2))>=10*pi/180)',config.target_heading_change_deg));
+stopExpression='abs(u(2))>=10*pi/180';
+if ~correctionProtocol
+    stopExpression=sprintf('(u(1)>=%.17g*pi/180)||(abs(u(2))>=10*pi/180)',config.target_heading_change_deg);
+end
+add_block('simulink/User-Defined Functions/Fcn',[model '/RtStopCondition'],'Expr',stopExpression);
 add_block('simulink/Sinks/Stop Simulation',[model '/RtStop']);
 add_line(model,'RtWatch/1','RtWatchSample/1'); add_line(model,'RtWatchSample/1','RtStopCondition/1');
 add_line(model,'RtStopCondition/1','RtStop/1');
@@ -89,6 +108,8 @@ set_param(model,'SaveOutput','off','SaveFinalState','on','FinalStateName','xFina
 set_param(model,'FastRestart','on');
 writeJson(fullfile(folder,'ready.json'),struct('ready',true,'parameters',config));
 time=0; checkpoint=[];
+correctionTriggered=false; stableDuration=0; lastSampleTime=0;
+if correctionProtocol, correctionTriggered=abs(config.initial_lateral_deviation_ft)>50; end
 for seq=1:ceil(config.max_simulation_time_s/0.5)
     requestFile=fullfile(folder,sprintf('request_%03d.json',seq));
     timer=tic;
@@ -100,7 +121,13 @@ for seq=1:ceil(config.max_simulation_time_s/0.5)
         request=jsondecode(fileread(requestFile));
         assert(request.throttle_left>=0 && request.throttle_left<=0.4);
         assert(request.throttle_right>=0 && request.throttle_right<=0.4);
-        assert(request.nose_wheel_deg>=0 && request.nose_wheel_deg<=config.target_nose_wheel_deg);
+        if correctionProtocol
+            assert(request.nose_wheel_deg==0 && abs(request.throttle_left-request.throttle_right)<1e-8);
+            assert(request.brake_system_mode==0 && ~request.auto_brake_armed);
+            assert(correctionTriggered || (request.brake_left==0 && request.brake_right==0));
+        else
+            assert(request.nose_wheel_deg>=0 && request.nose_wheel_deg<=config.target_nose_wheel_deg);
+        end
         in=Simulink.SimulationInput(model);
         in=in.setVariable('RtLeft',request.throttle_left);
         in=in.setVariable('RtRight',request.throttle_right);
@@ -125,7 +152,20 @@ for seq=1:ceil(config.max_simulation_time_s/0.5)
         safe=all(isfinite([t;x;y;psi;roll;u;v;r;contact;wheel])) && ...
             max(abs(roll))<deg2rad(10) && all(contact>0.5);
         reverse=u(end)*cos(psi(end))-v(end)*sin(psi(end))<0;
-        complete=safe && rad2deg(psi(end))>=config.target_heading_change_deg && reverse;
+        lateralVelocity=u.*sin(psi)+v.*cos(psi);
+        if correctionProtocol
+            for sample=1:numel(t)
+                correctionTriggered=correctionTriggered || abs(y(sample))>50*.3048;
+                dt=max(0,t(sample)-lastSampleTime); lastSampleTime=t(sample);
+                stable=correctionTriggered && abs(y(sample))<=30*.3048 && ...
+                    abs(psi(sample))<=deg2rad(3) && abs(r(sample))<=deg2rad(1) && abs(lateralVelocity(sample))<=.75;
+                if stable, stableDuration=stableDuration+dt; else, stableDuration=0; end
+            end
+            safe=safe && max(abs(y))<60 && max(abs(psi))<deg2rad(20);
+            complete=safe && stableDuration>=1;
+        else
+            complete=safe && rad2deg(psi(end))>=config.target_heading_change_deg && reverse;
+        end
         idx=unique(round(linspace(1,numel(t),min(31,numel(t)))));
         result=struct('safe',safe,'complete',complete,'on_ground',all(contact>0.5), ...
             'time_s',time,'start_time_s',t(1),'initial_x_m',x(1),'initial_y_m',y(1), ...
@@ -151,6 +191,15 @@ for seq=1:ceil(config.max_simulation_time_s/0.5)
             result.max_brake_left=max(left); result.max_brake_right=max(right);
             result.trajectory.brake_left=left(idx); result.trajectory.brake_right=right(idx);
             result.trajectory.steering_limit_deg=lim(idx);
+        end
+        if correctionProtocol
+            result.lateral_deviation_ft=y(end)/.3048;
+            result.max_abs_deviation_ft=max(abs(y))/.3048;
+            result.lateral_velocity_m_s=lateralVelocity(end);
+            result.correction_triggered=logical(correctionTriggered);
+            result.stable_duration_s=stableDuration;
+            result.trajectory.lateral_deviation_ft=y(idx)/.3048;
+            result.trajectory.lateral_velocity_m_s=lateralVelocity(idx);
         end
         writeJson(fullfile(folder,sprintf('response_%03d.json',seq)),result);
         if complete || ~safe || time>=config.max_simulation_time_s-1e-8, break; end

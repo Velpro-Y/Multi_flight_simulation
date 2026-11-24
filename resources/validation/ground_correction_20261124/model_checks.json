@@ -1,0 +1,143 @@
+[
+  {
+    "run_id": "brake-correction-reference-41a05a20",
+    "parameters": {
+      "experiment": "brake_correction",
+      "initial_speed_kn": 100,
+      "initial_lateral_deviation_ft": 45,
+      "initial_heading_deg": 2,
+      "max_simulation_time_s": 20.0
+    },
+    "decision_source": "model_test_reference",
+    "dify_calls": 0,
+    "evaluation": {
+      "scene_id": "ground_direction",
+      "experiment": "brake_correction",
+      "test_point": "2-4",
+      "prompt_version": "0.4.0",
+      "prompt_hash": "model_reference",
+      "parameters": {
+        "experiment": "brake_correction",
+        "initial_speed_kn": 100.0,
+        "initial_lateral_deviation_ft": 45.0,
+        "initial_heading_deg": 2.0,
+        "max_simulation_time_s": 20.0
+      },
+      "passed": true,
+      "hard_gates": {
+        "reset_and_steps": true,
+        "initial_condition_valid": true,
+        "format_valid": true,
+        "trigger_50ft_observed": true,
+        "no_early_braking": true,
+        "differential_direction_correct": true,
+        "brake_routing_valid": true,
+        "brakes_are_correction_actuator": true,
+        "state_continuity": true,
+        "state_safe": true,
+        "recovered_within_30ft": true,
+        "stable_recovery": true,
+        "completed": true
+      },
+      "failure_labels": [],
+      "document_core_indicators": {
+        "trigger_beyond_50ft": true,
+        "correct_initial_brake_direction": true,
+        "final_deviation_within_30ft": true,
+        "passed": true
+      },
+      "engineering_stability": {
+        "heading_tolerance_deg": 3,
+        "yaw_rate_tolerance_deg_s": 1,
+        "lateral_velocity_tolerance_m_s": 0.75,
+        "hold_time_s": 1,
+        "passed": true
+      },
+      "metrics": {
+        "steps": 39,
+        "score": 100.0,
+        "time_s": 19.5,
+        "final_deviation_ft": -0.799069981167528,
+        "peak_abs_deviation_ft": 57.37331386187585,
+        "final_speed_kn": 53.427667250078215,
+        "stable_duration_s": 1.0770045436048399
+      },
+      "scope": "原生6DOF模型的试验点2-4功能映射：100kn，50ft触发，30ft回收并稳定1s；非原大型机重量重心验收"
+    },
+    "initial_speed_kn": 100,
+    "safe_and_grounded": true
+  },
+  {
+    "run_id": "brake-correction-coast-71a65b42",
+    "parameters": {
+      "experiment": "brake_correction",
+      "initial_speed_kn": 100,
+      "initial_lateral_deviation_ft": 45,
+      "initial_heading_deg": 2,
+      "max_simulation_time_s": 5.0
+    },
+    "decision_source": "zero_controls",
+    "dify_calls": 0,
+    "evaluation": {
+      "scene_id": "ground_direction",
+      "experiment": "brake_correction",
+      "test_point": "2-4",
+      "prompt_version": "0.4.0",
+      "prompt_hash": "model_reference",
+      "parameters": {
+        "experiment": "brake_correction",
+        "initial_speed_kn": 100.0,
+        "initial_lateral_deviation_ft": 45.0,
+        "initial_heading_deg": 2.0,
+        "max_simulation_time_s": 5.0
+      },
+      "passed": false,
+      "hard_gates": {
+        "reset_and_steps": true,
+        "initial_condition_valid": true,
+        "format_valid": true,
+        "trigger_50ft_observed": true,
+        "no_early_braking": true,
+        "differential_direction_correct": false,
+        "brake_routing_valid": true,
+        "brakes_are_correction_actuator": true,
+        "state_continuity": true,
+        "state_safe": true,
+        "recovered_within_30ft": false,
+        "stable_recovery": false,
+        "completed": false
+      },
+      "failure_labels": [
+        "DIFFERENTIAL_DIRECTION_CORRECT",
+        "RECOVERED_WITHIN_30FT",
+        "STABLE_RECOVERY",
+        "COMPLETED"
+      ],
+      "document_core_indicators": {
+        "trigger_beyond_50ft": true,
+        "correct_initial_brake_direction": false,
+        "final_deviation_within_30ft": false,
+        "passed": false
+      },
+      "engineering_stability": {
+        "heading_tolerance_deg": 3,
+        "yaw_rate_tolerance_deg_s": 1,
+        "lateral_velocity_tolerance_m_s": 0.75,
+        "hold_time_s": 1,
+        "passed": false
+      },
+      "metrics": {
+        "steps": 10,
+        "score": 69.23076923076923,
+        "time_s": 5,
+        "final_deviation_ft": 63.078720635135106,
+        "peak_abs_deviation_ft": 63.078720635135106,
+        "final_speed_kn": 93.41549196882806,
+        "stable_duration_s": 0
+      },
+      "scope": "原生6DOF模型的试验点2-4功能映射：100kn，50ft触发，30ft回收并稳定1s；非原大型机重量重心验收"
+    },
+    "initial_speed_kn": 100,
+    "safe_and_grounded": true
+  }
+]

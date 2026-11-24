@@ -2,6 +2,11 @@
   "ground_direction": {
     "published": "0.2.0",
     "versions": {
+      "0.4.0": {
+        "version": "0.4.0", "status": "candidate", "name": "ground_brake_correction",
+        "description": "试验点2-4差动刹车纠偏：100kn滑跑、超过50ft触发、回收30ft内稳定保持",
+        "addendum": "", "created_from": "0.3.0", "regression_report": null
+      },
       "0.3.0": {
         "version": "0.3.0", "status": "candidate", "name": "ground_brake_candidate",
         "description": "修正刹车选择器，增加左右刹车、自动刹车选择和随速限角观测",

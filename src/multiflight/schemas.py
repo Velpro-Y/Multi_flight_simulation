@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -43,12 +43,23 @@ class GroundDirectionParameters(BaseModel):
     max_simulation_time_s: float = Field(default=20, ge=5, le=20)
 
 
+class GroundCorrectionParameters(BaseModel):
+    """Test point 2-4: 100kn, trigger beyond 50ft, recover within 30ft."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    experiment: Literal["brake_correction"] = "brake_correction"
+    initial_speed_kn: float = Field(default=100, ge=100, le=100)
+    initial_lateral_deviation_ft: float = Field(default=45, ge=-80, le=80)
+    initial_heading_deg: float = Field(default=2, ge=-5, le=5)
+    max_simulation_time_s: float = Field(default=20, ge=5, le=20)
+
+
 class RunRequest(BaseModel):
     scene_id: str = "engine_failure"
     preparation_id: Optional[str] = None
     prompt_version: Optional[str] = None
     query: Optional[str] = None
-    parameters: Optional[GroundDirectionParameters] = None
+    parameters: Optional[Union[GroundDirectionParameters, GroundCorrectionParameters]] = None
 
     @model_validator(mode="after")
     def validate_scene_parameters(self):

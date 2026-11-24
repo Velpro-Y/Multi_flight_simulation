@@ -263,6 +263,9 @@ class RunEvaluator:
 
 
 def _evaluate_ground(scene, records, version, prompt_hash, runtime_context=None):
+    if version.startswith("0.4."):
+        from .ground_correction import evaluate_correction
+        return evaluate_correction(scene, records, version, prompt_hash, runtime_context)
     if version.startswith(("0.2.", "0.3.")):
         return _evaluate_ground_realtime(scene, records, version, prompt_hash, runtime_context)
     steps = [r for r in records if r.get("kind") == "step"]

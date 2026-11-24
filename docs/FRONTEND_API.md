@@ -277,6 +277,8 @@ GET /api/runs/{run_id}
 
 ## 4. HTTP 状态和错误处理
 
+2026-11-24新增独立纠偏科目：`GET /api/scenarios/ground_direction/parameters?experiment=brake_correction` 返回0.4.0候选的参数和默认请求，Swagger中也提供“试验点2-4差动刹车纠偏”示例。参数结构与低速转向不同，详见 [SCENE3_BRAKE_CORRECTION.md](SCENE3_BRAKE_CORRECTION.md)。本例Dify原文核心指标达成、工程稳定性未通过，前端必须按 `evaluation.passed` 展示综合结果，同时可分别显示 `document_core_indicators` 与 `engineering_stability`；历史任务在数据库保存的是首次评价，更新的解释性字段见交付审计文件。
+
 | 状态码 | 含义 | 前端处理 |
 | --- | --- | --- |
 | 200/201/202 | 成功、已创建或已接受 | 展示数据或进入轮询 |

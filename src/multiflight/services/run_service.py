@@ -15,10 +15,10 @@ from ..dify_client import DifyClient
 from ..evaluation import RunEvaluator
 from ..prompts import PromptCompiler, PromptStore
 from ..scene_registry import SceneRegistry
-from ..schemas import GroundDirectionParameters
+from ..schemas import GroundDirectionParameters, GroundCorrectionParameters
 from ..settings import RUN_DIR
 from ..simulation import SimulationManager
-from ..simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction
+from ..simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction, GroundCorrectionAction
 
 
 DEFAULT_QUERY = (
@@ -61,11 +61,12 @@ class RunService:
     ) -> dict[str, Any]:
         if parameters is not None or scene_id == "ground_direction":
             version = self.prompts.get(scene_id, prompt_version)["version"]
-            realtime = scene_id == "ground_direction" and version.startswith(("0.2.", "0.3."))
+            realtime = scene_id == "ground_direction" and version.startswith(("0.2.", "0.3.", "0.4."))
             if parameters is not None and not realtime:
                 raise ValueError("参数化地面实验仅支持场景三0.2/0.3逐步协议")
             if realtime:
-                parameters = GroundDirectionParameters.model_validate(parameters or {}).model_dump()
+                parameter_type = GroundCorrectionParameters if version.startswith("0.4.") else GroundDirectionParameters
+                parameters = parameter_type.model_validate(parameters or {}).model_dump()
         run_id = f"run-{uuid.uuid4().hex[:12]}"
         payload = {
             "scene_id": scene_id,
@@ -129,13 +130,15 @@ class RunService:
 
         version_record = self.prompts.get(scene_id, prompt_version)
         version = version_record["version"]
-        brake_protocol = scene_id == "ground_direction" and version.startswith("0.3.")
-        realtime = scene_id == "ground_direction" and version.startswith(("0.2.", "0.3."))
+        correction_protocol = scene_id == "ground_direction" and version.startswith("0.4.")
+        brake_protocol = scene_id == "ground_direction" and version.startswith(("0.3.", "0.4."))
+        realtime = scene_id == "ground_direction" and version.startswith(("0.2.", "0.3.", "0.4."))
         if parameters is not None and not realtime:
             raise ValueError("参数化地面实验仅支持场景三0.2/0.3逐步协议")
         context = preparation
         if realtime:
-            parameters = GroundDirectionParameters.model_validate(parameters or {}).model_dump()
+            parameter_type = GroundCorrectionParameters if correction_protocol else GroundDirectionParameters
+            parameters = parameter_type.model_validate(parameters or {}).model_dump()
             context = {"normalized_parameters": parameters}
         artifact = self.compiler.compile(
             scene,
@@ -150,6 +153,7 @@ class RunService:
             message=f"已加载提示词 {artifact.version}，等待Dify Agent调用仿真工具",
         )
         configuration = {"mode": "realtime", "brake_protocol": brake_protocol,
+                         "correction_protocol": correction_protocol,
                          "normalized_parameters": parameters} if realtime else preparation
         self.simulator.begin_run(
             run_id,
@@ -186,7 +190,7 @@ class RunService:
                             )
                         # Keep even a malformed model response for diagnosis.
                         (folder / f"dify_response_{index+1:03d}.json").write_text(_json(decision), encoding="utf-8")
-                        action_type = GroundBrakeAction if brake_protocol else GroundRealtimeAction
+                        action_type = GroundCorrectionAction if correction_protocol else GroundBrakeAction if brake_protocol else GroundRealtimeAction
                         action = _parse_realtime_action(decision["answer"], action_type)
                         decisions.append({"index": index+1, "state": result["state"], "dify": decision,
                                           "action": action.model_dump(),

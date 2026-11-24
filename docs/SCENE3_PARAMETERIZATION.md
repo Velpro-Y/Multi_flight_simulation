@@ -2,6 +2,8 @@
 
 更新日期：2026-11-24。适用于场景三 `0.2.0` 和 `0.3.0` 逐步决策协议，交付分支为 `codex/scene3-ground-direction`，尚未合入 `develop`。
 
+独立的100kn差动刹车纠偏使用另一组参数和0.4.0候选，见[试验点2-4说明](SCENE3_BRAKE_CORRECTION.md)；本页仍描述低速转向和刹车覆盖流程。
+
 ## 参数与调用
 
 前端读取 `GET /api/scenarios/ground_direction/parameters` 生成表单，直接提交 `POST /api/runs`。场景三使用地面状态初始化，不调用场景一的动态配平接口。

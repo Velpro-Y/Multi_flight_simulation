@@ -1,0 +1,111 @@
+{
+  "run_id": "run-e9ca84f93122",
+  "status": "completed_with_failures",
+  "error": null,
+  "parameters": {
+    "experiment": "brake_correction",
+    "initial_speed_kn": 100.0,
+    "initial_lateral_deviation_ft": 45.0,
+    "initial_heading_deg": 2.0,
+    "max_simulation_time_s": 20.0
+  },
+  "checks": {
+    "task_passed": false,
+    "parameters_consistent": true,
+    "fresh_call_each_step": true,
+    "prompt_hash_matches": true
+  },
+  "passed": false,
+  "dify": {
+    "mode": "per_step_decision",
+    "decisions": 40,
+    "model_calls": 40,
+    "reused_decisions": 0,
+    "decisions_file": "data\\runs\\run-e9ca84f93122\\decisions.json"
+  },
+  "evaluation": {
+    "scene_id": "ground_direction",
+    "experiment": "brake_correction",
+    "test_point": "2-4",
+    "prompt_version": "0.4.0",
+    "prompt_hash": "612e1a2972e8df03c8269b3b4ca215c19ff2c211023654e93d5eb112e40dcb8a",
+    "parameters": {
+      "experiment": "brake_correction",
+      "initial_speed_kn": 100.0,
+      "initial_lateral_deviation_ft": 45.0,
+      "initial_heading_deg": 2.0,
+      "max_simulation_time_s": 20.0
+    },
+    "passed": false,
+    "hard_gates": {
+      "reset_and_steps": true,
+      "initial_condition_valid": true,
+      "format_valid": true,
+      "trigger_50ft_observed": true,
+      "no_early_braking": true,
+      "differential_direction_correct": true,
+      "brake_routing_valid": true,
+      "brakes_are_correction_actuator": true,
+      "state_continuity": true,
+      "state_safe": true,
+      "recovered_within_30ft": true,
+      "stable_recovery": false,
+      "completed": false
+    },
+    "failure_labels": [
+      "STABLE_RECOVERY",
+      "COMPLETED"
+    ],
+    "document_core_indicators": {
+      "trigger_beyond_50ft": true,
+      "correct_initial_brake_direction": true,
+      "final_deviation_within_30ft": true,
+      "passed": true
+    },
+    "engineering_stability": {
+      "heading_tolerance_deg": 3,
+      "yaw_rate_tolerance_deg_s": 1,
+      "lateral_velocity_tolerance_m_s": 0.75,
+      "hold_time_s": 1,
+      "passed": false
+    },
+    "metrics": {
+      "steps": 40,
+      "score": 84.61538461538461,
+      "time_s": 20,
+      "final_deviation_ft": -6.9814695222667265,
+      "peak_abs_deviation_ft": 58.70978251819354,
+      "final_speed_kn": 61.87410485800592,
+      "stable_duration_s": 0
+    },
+    "scope": "原生6DOF模型的试验点2-4功能映射：100kn，50ft触发，30ft回收并稳定1s；非原大型机重量重心验收"
+  },
+  "final_state": {
+    "flight_phase": "FAILED",
+    "time": 20,
+    "speed_kn": 61.87410485800592,
+    "heading_deg": -2.9506114122030884,
+    "yaw_rate_deg_s": -0.09503647073510735,
+    "wheel_deg": 0,
+    "x_m": 806.4236047225954,
+    "y_m": -2.1279519103868982,
+    "roll_deg": 0.05708384063757789,
+    "on_ground": true,
+    "reached_5kn": true,
+    "max_simulation_time_s": 20.0,
+    "lateral_deviation_ft": -6.9814695222667265,
+    "lateral_velocity_m_s": -1.6382720593698736,
+    "correction_triggered": true,
+    "stable_duration_s": 0,
+    "trigger_deviation_ft": 50,
+    "target_deviation_ft": 30,
+    "brake_left": 0,
+    "brake_right": 0,
+    "brake_system_mode": 0,
+    "auto_brake_armed": false,
+    "auto_brake_active": false,
+    "steering_limit_deg": 5.999999999999996,
+    "manual_brake_used": true,
+    "auto_brake_used": false
+  }
+}
