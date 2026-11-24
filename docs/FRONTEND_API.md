@@ -247,16 +247,33 @@ GET /api/runs/{run_id}
 
 ### 3.5 场景三参数
 
-场景三至少向前端暴露：
+2026-11-24：0.2/0.3逐步协议支持以下参数。通过 `GET /api/scenarios/ground_direction/parameters` 获取表单元数据；直接调用 `/api/runs`，无需调用场景一配平接口。
 
-- 初始地速
-- 初始横向偏差
-- 初始航向偏差
-- 跑道方向
-- 风速和风向（模型支持后启用）
-- 仿真时长
+| 字段 | 含义 | 范围 | 默认值 |
+| --- | --- | --- | --- |
+| `initial_speed_kn` | 初始地速，kn | 0～5 | 0 |
+| `target_nose_wheel_deg` | 目标前轮角及本轮指令上限，° | 20～75 | 75 |
+| `target_heading_change_deg` | 目标右转航向变化，° | 150～180 | 177 |
+| `max_simulation_time_s` | 最长仿真时间，s | 5～20 | 20 |
 
-动作参数不由普通前端用户逐步输入，而由离线决策模型通过后端工具接口产生。差动刹车字段保留但必须标记为 `reserved`。
+```json
+{
+  "scene_id": "ground_direction",
+  "prompt_version": "0.2.0",
+  "parameters": {
+    "initial_speed_kn": 5,
+    "target_nose_wheel_deg": 40,
+    "target_heading_change_deg": 150,
+    "max_simulation_time_s": 20
+  }
+}
+```
+
+省略 `parameters` 使用原有默认值，`prompt_version` 也可省略以使用发布版本。刹车实验显式选择候选 `0.3.0`。`parameters` 只接收场景三参数；场景一仍使用 `prepare` 和 `preparation_id`。不能同时向场景三传 `preparation_id`；旧 `0.1` 协议不接受这些参数。
+
+初始航向、位置及轮角固定为0；风、左转、横向偏差与跑道方向尚未开放。达到5kn前必须直行；初始5kn可从第一步开始转向。Dify仍逐步选择左右油门、前轮角及相应版本的刹车动作。模型达到目标航向且运动反向后结束，评价器另检查实际轮角达到目标；超时或模型不安全则失败。允许非0.5倍数时限，最后一段会缩短。接口范围不保证所有组合成功。
+
+结果 `payload.parameters`、报告 `parameters`、`evaluation.parameters`、逐步 `state` 和本轮提示词可用于核对设置。每轮实际配置还保存在 `realtime-*/configuration.json`。复验及验证范围见 [SCENE3_PARAMETERIZATION.md](SCENE3_PARAMETERIZATION.md)。
 
 ## 4. HTTP 状态和错误处理
 
@@ -278,5 +295,5 @@ GET /api/runs/{run_id}
 4. 提交 `/api/simulations/prepare`，展示校验和配平结果。
 5. 使用 `preparation_id` 调用 `/api/runs`。
 6. 轮询任务并展示当前阶段、进度和最终评价。
-7. 场景二显示“接口保留，刹车模块暂缓”。
-8. 场景三在模型未通过验收前显示“开发中”，不得伪造可运行结果。
+7. 场景二显示“接口预留，完整实验流程待接入”。
+8. 场景三读取其参数Schema，直接提交 `/api/runs`；结果按本轮目标和评估报告显示。

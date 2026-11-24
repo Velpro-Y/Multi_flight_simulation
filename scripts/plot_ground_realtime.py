@@ -30,6 +30,9 @@ def read(path):
 decisions = read(folder / "decisions.json")
 records = read(folder / "records.json")
 evaluation = read(folder / "evaluation.json")
+parameters = evaluation.get("parameters", {})
+target_heading = parameters.get("target_heading_change_deg", 177)
+target_wheel = parameters.get("target_nose_wheel_deg", 75)
 steps = [r for r in records if r["kind"] == "step"]
 assert len(steps) == len(decisions)
 traces = [read(Path(r["result"]["simulation_file"])) for r in steps]
@@ -52,12 +55,14 @@ plt.rcParams.update({"font.family": "Microsoft YaHei", "font.size": 10,
 BLUE, BROWN, GREY = "#355C75", "#915A3C", "#737373"
 fig, matrix = plt.subplots(2, 3, figsize=(15, 9))
 axes = list(matrix.flat)
-fig.subplots_adjust(left=.075, right=.97, top=.83 if args.simple else .80,
+fig.subplots_adjust(left=.075, right=.97, top=(.79 if parameters else .83) if args.simple else .80,
                     bottom=.15 if args.simple else .18, wspace=.38, hspace=.58)
-fig.suptitle("场景三 · Dify闭环掉头仿真" if args.simple else "场景三 · Dify逐步闭环决策实测", x=.06, y=.965, ha="left", fontsize=22)
+fig.suptitle("场景三 · Dify参数化右转仿真" if args.simple and parameters else "场景三 · Dify闭环掉头仿真" if args.simple else "场景三 · Dify逐步闭环决策实测", x=.06, y=.965, ha="left", fontsize=22)
 subtitle = (f"提示词 v{evaluation['prompt_version']}   ·   {len(steps)}次决策   ·   仿真步长0.5 s" if args.simple else
             f"提示词v{evaluation['prompt_version']}  |  {len(steps)}步决策  |  每步0.5秒仿真时间  |  左右油门与前轮角由Dify决定，无PI代驾")
 fig.text(.06, .895, subtitle, fontsize=11, color="#46515A")
+if args.simple and parameters:
+    fig.text(.06, .85, f"初始地速 {parameters['initial_speed_kn']:g} kn   ·   前轮目标 {target_wheel:g}°   ·   航向目标 {target_heading:g}°", fontsize=11, color=GREY)
 if not args.simple:
     fig.text(.06, .85, f"○ 前{sum(~live)}步：状态匹配后复用已有真实Dify决策     ■ 后{sum(live)}步：新请求Dify     仿真等待模型响应，非墙钟硬实时", fontsize=10, color=GREY)
 
@@ -86,8 +91,9 @@ axes[0].annotate("起点", (0, 0), xytext=(6, 3), textcoords="offset points")
 axes[0].set(title="地面轨迹" if args.simple else "地面轨迹与决策位置 · 等比例", xlabel="横向位置 Ye (m)", ylabel="初始前进方向 Xe (m)")
 axes[0].set_aspect("equal", adjustable="box")
 axes[0].legend(frameon=False, fontsize=8, loc="upper left", bbox_to_anchor=(1.03, 1))
-axes[1].axhline(177, color=GREY, ls=":", lw=1)
+axes[1].axhline(target_heading, color=GREY, ls=":", lw=1, label=f"目标 {target_heading:g}°")
 axes[1].set(title="航向" if args.simple else "航向变化 · 点为决策时刻", ylabel="航向角 (°)")
+axes[1].legend(frameon=False, fontsize=9)
 axes[2].axhline(5, color=BROWN, ls=":", lw=1, label="目标5 kn")
 axes[2].set(title="速度" if args.simple else "速度反馈 · 恒速目标未达标", ylabel="速度 (kn)", ylim=(0, max(6, max(s['max_speed_kn'] for s in traces)*1.1)))
 axes[2].legend(frameon=False, fontsize=9)
@@ -98,7 +104,7 @@ axes[3].step(hold_t, np.r_[actions["nose_wheel_deg"], actions["nose_wheel_deg"][
 actual_t = np.r_[0, end_t]
 actual_wheel = np.r_[0, [r["result"]["state"]["wheel_deg"] for r in steps]]
 axes[3].plot(actual_t, actual_wheel, color=BLUE, marker=".", lw=1.7, label="实际角")
-axes[3].set(title="前轮转角" if args.simple else "前轮目标与实际响应", ylabel="前轮角 (°)", ylim=(-3, 85))
+axes[3].set(title="前轮转角" if args.simple else "前轮目标与实际响应", ylabel="前轮角 (°)", ylim=(-3, max(target_wheel, max(s["max_wheel_deg"] for s in traces)) + 10))
 axes[3].legend(frameon=False, fontsize=9)
 for key, label, color, style in [("throttle_left", "左油门", BLUE, "-"), ("throttle_right", "右油门", BROWN, "--")]:
     axes[4].step(hold_t, np.r_[actions[key], actions[key][-1]], where="post", color=color, ls=style, lw=1.8, label=label)

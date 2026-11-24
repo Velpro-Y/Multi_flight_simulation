@@ -1,0 +1,54 @@
+{
+  "script": "scripts\\plot_ground_realtime.py",
+  "source_sha256": {
+    "data\\runs\\run-8deb2c3e180a\\decisions.json": "6a10692f8b04358617f00cd4947b57176338d030179997e5be1c43dcac5edfd0",
+    "data\\runs\\run-8deb2c3e180a\\records.json": "90fed0f47179ad018cec336a022951b431a16295b6a0ae52a398dbf9d0570603",
+    "data\\runs\\run-8deb2c3e180a\\evaluation.json": "a76d1dbc93831d078e2979641b1c7a16695833800d5ab5325bd3d711a13216cf",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_001.json": "c99bb3af676afba3fdd3b34390df707a05e03bd48b9c501561f33633b4e98837",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_002.json": "924d4bb4a516eb2725924f3d16c547daa8ed4e7bfc4b78e7df51f52a79adcef1",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_003.json": "560f0416bd1cfd0537db48dc4111af6dc59ad2d4b4f69bd22433434eeb6db756",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_004.json": "500beb5c4d910c46aec5f966ba62824de46bf307e9746781e5ee58d97c8762f3",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_005.json": "1d0520421151bde34ed3509c8c5beb9b80ba7757a5f9153fe7d63076a8ac783d",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_006.json": "8ec67fb50bae2bb5cf58a601451b6044ae698edbb21af3253046e0bd292b43d4",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_007.json": "4109c6dc387e65f1e498a900c1f25b7de0e3a8f44b4e8aca4a1649632af91e34",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_008.json": "8cc01e445a9e7082d53c02fb6d979cc53486c39b8df49edd99ad64c16312c1a0",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_009.json": "875f7d579b652f7e6c7c025155de09c3310ee5bbc00246567f339f69258b2798",
+    "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_010.json": "e80efa1c47b60cedede1f84f6b50ab9ed1a66f5f4dc03f1ec09a688c1648acd2"
+  },
+  "transformations": [
+    "Plot native saved trajectory segments separately without smoothing",
+    "Plot raw LLM actions with zero-order hold; actual wheel angles and rolls are step-end samples",
+    "Mark reused vs freshly requested Dify decisions; preserve original failed attempt elsewhere"
+  ],
+  "matplotlib": "3.8.4",
+  "image_metadata": {
+    "pixels": [
+      2550,
+      1530
+    ],
+    "dpi": [
+      170.0022,
+      170.0022
+    ],
+    "mode": "RGBA"
+  },
+  "min_saved_speed_kn_including_start": 5,
+  "visual_review": {
+    "status": "OK",
+    "date": "2026-11-24",
+    "reviewer": "assistant visual inspection",
+    "checks": [
+      "Native trajectory segments, equal-aspect path",
+      "Correct 150-degree heading target and 40-degree wheel target",
+      "Readable labels and legends; no overlap after top-margin adjustment",
+      "Left/right throttle distinguished by line style; no smoothing"
+    ]
+  },
+  "parameters": {
+    "initial_speed_kn": 5.0,
+    "target_nose_wheel_deg": 40.0,
+    "target_heading_change_deg": 150.0,
+    "max_simulation_time_s": 20.0
+  },
+  "generator_sha256": "7aaa4b4f1d7b29e18d9af6e6b1863bf1626ae9861bc32ee68f6ee61ee367b3f9"
+}

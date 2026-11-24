@@ -1,0 +1,797 @@
+[
+  {
+    "sequence": 0,
+    "timestamp": "2026-11-24T03:03:31.143814+00:00",
+    "kind": "reset",
+    "result": {
+      "state": {
+        "flight_phase": "READY",
+        "time": 0,
+        "speed_kn": 5.0,
+        "heading_deg": 0,
+        "yaw_rate_deg_s": 0,
+        "wheel_deg": 0,
+        "x_m": 0,
+        "y_m": 0,
+        "roll_deg": 0,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "REALTIME_READY"
+    }
+  },
+  {
+    "sequence": 1,
+    "timestamp": "2026-11-24T03:03:51.274964+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "READY",
+      "time": 0,
+      "speed_kn": 5.0,
+      "heading_deg": 0,
+      "yaw_rate_deg_s": 0,
+      "wheel_deg": 0,
+      "x_m": 0,
+      "y_m": 0,
+      "roll_deg": 0,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 10.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.25
+    },
+    "applied_action": {
+      "nose_wheel_deg": 10.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.25
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 0.5,
+        "speed_kn": 5.338544221083153,
+        "heading_deg": 2.7690592114215593,
+        "yaw_rate_deg_s": 8.942593447056401,
+        "wheel_deg": 10,
+        "x_m": 1.3270353062932476,
+        "y_m": 0.04993798848355925,
+        "roll_deg": -0.40468137144916155,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 10.0,
+        "throttle_left": 0.4,
+        "throttle_right": 0.25
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 0.5,
+        "start_time_s": 0,
+        "initial_x_m": 0,
+        "initial_y_m": 0,
+        "initial_speed_kn": 5,
+        "x_m": 1.3270353062932476,
+        "y_m": 0.04993798848355925,
+        "speed_kn": 5.338544221083153,
+        "heading_deg": 2.7690592114215593,
+        "yaw_rate_deg_s": 8.942593447056401,
+        "roll_deg": -0.40468137144916155,
+        "max_abs_roll_deg": 0.40468137144916155,
+        "wheel_deg": 10,
+        "max_wheel_deg": 10,
+        "max_speed_kn": 5.338544221083153
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_001.json"
+    }
+  },
+  {
+    "sequence": 2,
+    "timestamp": "2026-11-24T03:03:54.514069+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 0.5,
+      "speed_kn": 5.338544221083153,
+      "heading_deg": 2.7690592114215593,
+      "yaw_rate_deg_s": 8.942593447056401,
+      "wheel_deg": 10,
+      "x_m": 1.3270353062932476,
+      "y_m": 0.04993798848355925,
+      "roll_deg": -0.40468137144916155,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 20.0,
+      "throttle_left": 0.26,
+      "throttle_right": 0.1
+    },
+    "applied_action": {
+      "nose_wheel_deg": 20.0,
+      "throttle_left": 0.26,
+      "throttle_right": 0.1
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 1,
+        "speed_kn": 5.204458897328075,
+        "heading_deg": 9.840778902195424,
+        "yaw_rate_deg_s": 17.4430126606565,
+        "wheel_deg": 20,
+        "x_m": 2.6593562591729603,
+        "y_m": 0.27608544167993654,
+        "roll_deg": -0.7218650549864984,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 20.0,
+        "throttle_left": 0.26,
+        "throttle_right": 0.1
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 1,
+        "start_time_s": 0.5,
+        "initial_x_m": 1.3270353062932476,
+        "initial_y_m": 0.04993798848355925,
+        "initial_speed_kn": 5.338544221083153,
+        "x_m": 2.6593562591729603,
+        "y_m": 0.27608544167993654,
+        "speed_kn": 5.204458897328075,
+        "heading_deg": 9.840778902195424,
+        "yaw_rate_deg_s": 17.4430126606565,
+        "roll_deg": -0.7218650549864984,
+        "max_abs_roll_deg": 0.7218650549864984,
+        "wheel_deg": 20,
+        "max_wheel_deg": 20,
+        "max_speed_kn": 5.338544221083153
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_002.json"
+    }
+  },
+  {
+    "sequence": 3,
+    "timestamp": "2026-11-24T03:03:57.904617+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 1,
+      "speed_kn": 5.204458897328075,
+      "heading_deg": 9.840778902195424,
+      "yaw_rate_deg_s": 17.4430126606565,
+      "wheel_deg": 20,
+      "x_m": 2.6593562591729603,
+      "y_m": 0.27608544167993654,
+      "roll_deg": -0.7218650549864984,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 32.0,
+      "throttle_left": 0.35,
+      "throttle_right": 0.05
+    },
+    "applied_action": {
+      "nose_wheel_deg": 32.0,
+      "throttle_left": 0.35,
+      "throttle_right": 0.05
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 1.5,
+        "speed_kn": 5.076605457321034,
+        "heading_deg": 21.691392304765987,
+        "yaw_rate_deg_s": 28.912190528979934,
+        "wheel_deg": 32,
+        "x_m": 3.8812490075698096,
+        "y_m": 0.7672478144515108,
+        "roll_deg": -1.0294994734358276,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 32.0,
+        "throttle_left": 0.35,
+        "throttle_right": 0.05
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 1.5,
+        "start_time_s": 1,
+        "initial_x_m": 2.6593562591729603,
+        "initial_y_m": 0.27608544167993654,
+        "initial_speed_kn": 5.204458897328075,
+        "x_m": 3.8812490075698096,
+        "y_m": 0.7672478144515108,
+        "speed_kn": 5.076605457321034,
+        "heading_deg": 21.691392304765987,
+        "yaw_rate_deg_s": 28.912190528979934,
+        "roll_deg": -1.0294994734358276,
+        "max_abs_roll_deg": 1.0294994734358276,
+        "wheel_deg": 32,
+        "max_wheel_deg": 32,
+        "max_speed_kn": 5.205311527957582
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_003.json"
+    }
+  },
+  {
+    "sequence": 4,
+    "timestamp": "2026-11-24T03:04:00.509073+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 1.5,
+      "speed_kn": 5.076605457321034,
+      "heading_deg": 21.691392304765987,
+      "yaw_rate_deg_s": 28.912190528979934,
+      "wheel_deg": 32,
+      "x_m": 3.8812490075698096,
+      "y_m": 0.7672478144515108,
+      "roll_deg": -1.0294994734358276,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.0
+    },
+    "applied_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.0
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 2,
+        "speed_kn": 5.178412887867503,
+        "heading_deg": 39.35677661316185,
+        "yaw_rate_deg_s": 39.16712194407785,
+        "wheel_deg": 40,
+        "x_m": 4.872548999205526,
+        "y_m": 1.6062233236191432,
+        "roll_deg": -1.3800089900300245,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 40.0,
+        "throttle_left": 0.4,
+        "throttle_right": 0.0
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 2,
+        "start_time_s": 1.5,
+        "initial_x_m": 3.8812490075698096,
+        "initial_y_m": 0.7672478144515108,
+        "initial_speed_kn": 5.076605457321034,
+        "x_m": 4.872548999205526,
+        "y_m": 1.6062233236191432,
+        "speed_kn": 5.178412887867503,
+        "heading_deg": 39.35677661316185,
+        "yaw_rate_deg_s": 39.16712194407785,
+        "roll_deg": -1.3800089900300245,
+        "max_abs_roll_deg": 1.3800089900300245,
+        "wheel_deg": 40,
+        "max_wheel_deg": 40,
+        "max_speed_kn": 5.178412887867503
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_004.json"
+    }
+  },
+  {
+    "sequence": 5,
+    "timestamp": "2026-11-24T03:04:03.030029+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 2,
+      "speed_kn": 5.178412887867503,
+      "heading_deg": 39.35677661316185,
+      "yaw_rate_deg_s": 39.16712194407785,
+      "wheel_deg": 40,
+      "x_m": 4.872548999205526,
+      "y_m": 1.6062233236191432,
+      "roll_deg": -1.3800089900300245,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.05
+    },
+    "applied_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.05
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 2.5,
+        "speed_kn": 5.5901927660746304,
+        "heading_deg": 59.63333036361248,
+        "yaw_rate_deg_s": 42.00744233513807,
+        "wheel_deg": 40,
+        "x_m": 5.544698126477172,
+        "y_m": 2.8098637971997835,
+        "roll_deg": -1.3868178254536756,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 40.0,
+        "throttle_left": 0.4,
+        "throttle_right": 0.05
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 2.5,
+        "start_time_s": 2,
+        "initial_x_m": 4.872548999205526,
+        "initial_y_m": 1.6062233236191432,
+        "initial_speed_kn": 5.178412887867503,
+        "x_m": 5.544698126477172,
+        "y_m": 2.8098637971997835,
+        "speed_kn": 5.5901927660746304,
+        "heading_deg": 59.63333036361248,
+        "yaw_rate_deg_s": 42.00744233513807,
+        "roll_deg": -1.3868178254536756,
+        "max_abs_roll_deg": 1.3868178254536756,
+        "wheel_deg": 40,
+        "max_wheel_deg": 40,
+        "max_speed_kn": 5.5901927660746304
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_005.json"
+    }
+  },
+  {
+    "sequence": 6,
+    "timestamp": "2026-11-24T03:04:05.193574+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 2.5,
+      "speed_kn": 5.5901927660746304,
+      "heading_deg": 59.63333036361248,
+      "yaw_rate_deg_s": 42.00744233513807,
+      "wheel_deg": 40,
+      "x_m": 5.544698126477172,
+      "y_m": 2.8098637971997835,
+      "roll_deg": -1.3868178254536756,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.25,
+      "throttle_right": 0.1
+    },
+    "applied_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.25,
+      "throttle_right": 0.1
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 3,
+        "speed_kn": 5.578302517299641,
+        "heading_deg": 80.51186016985814,
+        "yaw_rate_deg_s": 41.67601467285627,
+        "wheel_deg": 40,
+        "x_m": 5.76058738739664,
+        "y_m": 4.222764954250783,
+        "roll_deg": -1.442009185189257,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 40.0,
+        "throttle_left": 0.25,
+        "throttle_right": 0.1
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 3,
+        "start_time_s": 2.5,
+        "initial_x_m": 5.544698126477172,
+        "initial_y_m": 2.8098637971997835,
+        "initial_speed_kn": 5.5901927660746304,
+        "x_m": 5.76058738739664,
+        "y_m": 4.222764954250783,
+        "speed_kn": 5.578302517299641,
+        "heading_deg": 80.51186016985814,
+        "yaw_rate_deg_s": 41.67601467285627,
+        "roll_deg": -1.442009185189257,
+        "max_abs_roll_deg": 1.4447966126995324,
+        "wheel_deg": 40,
+        "max_wheel_deg": 40,
+        "max_speed_kn": 5.594971261005676
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_006.json"
+    }
+  },
+  {
+    "sequence": 7,
+    "timestamp": "2026-11-24T03:04:07.619315+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 3,
+      "speed_kn": 5.578302517299641,
+      "heading_deg": 80.51186016985814,
+      "yaw_rate_deg_s": 41.67601467285627,
+      "wheel_deg": 40,
+      "x_m": 5.76058738739664,
+      "y_m": 4.222764954250783,
+      "roll_deg": -1.442009185189257,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.0,
+      "throttle_right": 0.0
+    },
+    "applied_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.0,
+      "throttle_right": 0.0
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 3.5,
+        "speed_kn": 5.422499480961778,
+        "heading_deg": 101.04527578739817,
+        "yaw_rate_deg_s": 40.48725628176693,
+        "wheel_deg": 40,
+        "x_m": 5.463223845126634,
+        "y_m": 5.598306113654588,
+        "roll_deg": -1.3445001871582858,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 40.0,
+        "throttle_left": 0.0,
+        "throttle_right": 0.0
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 3.5,
+        "start_time_s": 3,
+        "initial_x_m": 5.76058738739664,
+        "initial_y_m": 4.222764954250783,
+        "initial_speed_kn": 5.578302517299641,
+        "x_m": 5.463223845126634,
+        "y_m": 5.598306113654588,
+        "speed_kn": 5.422499480961778,
+        "heading_deg": 101.04527578739817,
+        "yaw_rate_deg_s": 40.48725628176693,
+        "roll_deg": -1.3445001871582858,
+        "max_abs_roll_deg": 1.442009185189257,
+        "wheel_deg": 40,
+        "max_wheel_deg": 40,
+        "max_speed_kn": 5.578302517299641
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_007.json"
+    }
+  },
+  {
+    "sequence": 8,
+    "timestamp": "2026-11-24T03:04:10.227664+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 3.5,
+      "speed_kn": 5.422499480961778,
+      "heading_deg": 101.04527578739817,
+      "yaw_rate_deg_s": 40.48725628176693,
+      "wheel_deg": 40,
+      "x_m": 5.463223845126634,
+      "y_m": 5.598306113654588,
+      "roll_deg": -1.3445001871582858,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.32,
+      "throttle_right": 0.06
+    },
+    "applied_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.32,
+      "throttle_right": 0.06
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 4,
+        "speed_kn": 5.49081028567869,
+        "heading_deg": 121.48061987465488,
+        "yaw_rate_deg_s": 41.12243962607256,
+        "wheel_deg": 40,
+        "x_m": 4.711392382044945,
+        "y_m": 6.774447043737103,
+        "roll_deg": -1.352225813327829,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 40.0,
+        "throttle_left": 0.32,
+        "throttle_right": 0.06
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 4,
+        "start_time_s": 3.5,
+        "initial_x_m": 5.463223845126634,
+        "initial_y_m": 5.598306113654588,
+        "initial_speed_kn": 5.422499480961778,
+        "x_m": 4.711392382044945,
+        "y_m": 6.774447043737103,
+        "speed_kn": 5.49081028567869,
+        "heading_deg": 121.48061987465488,
+        "yaw_rate_deg_s": 41.12243962607256,
+        "roll_deg": -1.352225813327829,
+        "max_abs_roll_deg": 1.352225813327829,
+        "wheel_deg": 40,
+        "max_wheel_deg": 40,
+        "max_speed_kn": 5.49081028567869
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_008.json"
+    }
+  },
+  {
+    "sequence": 9,
+    "timestamp": "2026-11-24T03:04:12.834630+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 4,
+      "speed_kn": 5.49081028567869,
+      "heading_deg": 121.48061987465488,
+      "yaw_rate_deg_s": 41.12243962607256,
+      "wheel_deg": 40,
+      "x_m": 4.711392382044945,
+      "y_m": 6.774447043737103,
+      "roll_deg": -1.352225813327829,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.0
+    },
+    "applied_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.0
+    },
+    "result": {
+      "state": {
+        "flight_phase": "TURN",
+        "time": 4.5,
+        "speed_kn": 5.879947921193829,
+        "heading_deg": 142.854281703676,
+        "yaw_rate_deg_s": 44.15644355512393,
+        "wheel_deg": 40,
+        "x_m": 3.546566572464775,
+        "y_m": 7.6437699629652105,
+        "roll_deg": -1.555385584887614,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": false,
+      "event": "TURN",
+      "applied_action": {
+        "nose_wheel_deg": 40.0,
+        "throttle_left": 0.4,
+        "throttle_right": 0.0
+      },
+      "simulation": {
+        "safe": true,
+        "complete": false,
+        "on_ground": true,
+        "time_s": 4.5,
+        "start_time_s": 4,
+        "initial_x_m": 4.711392382044945,
+        "initial_y_m": 6.774447043737103,
+        "initial_speed_kn": 5.49081028567869,
+        "x_m": 3.546566572464775,
+        "y_m": 7.6437699629652105,
+        "speed_kn": 5.879947921193829,
+        "heading_deg": 142.854281703676,
+        "yaw_rate_deg_s": 44.15644355512393,
+        "roll_deg": -1.555385584887614,
+        "max_abs_roll_deg": 1.555385584887614,
+        "wheel_deg": 40,
+        "max_wheel_deg": 40,
+        "max_speed_kn": 5.879947921193829
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_009.json"
+    }
+  },
+  {
+    "sequence": 10,
+    "timestamp": "2026-11-24T03:04:16.478869+00:00",
+    "kind": "step",
+    "state_before": {
+      "flight_phase": "TURN",
+      "time": 4.5,
+      "speed_kn": 5.879947921193829,
+      "heading_deg": 142.854281703676,
+      "yaw_rate_deg_s": 44.15644355512393,
+      "wheel_deg": 40,
+      "x_m": 3.546566572464775,
+      "y_m": 7.6437699629652105,
+      "roll_deg": -1.555385584887614,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "raw_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.3,
+      "throttle_right": 0.05
+    },
+    "applied_action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.3,
+      "throttle_right": 0.05
+    },
+    "result": {
+      "state": {
+        "flight_phase": "SUCCESS",
+        "time": 4.67,
+        "speed_kn": 5.900154126922624,
+        "heading_deg": 150.34358116283332,
+        "yaw_rate_deg_s": 44.01971019418858,
+        "wheel_deg": 40,
+        "x_m": 3.0702597130804006,
+        "y_m": 7.839463003449243,
+        "roll_deg": -1.62037603859115,
+        "on_ground": true,
+        "reached_5kn": true,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "done": true,
+      "event": "SUCCESS",
+      "applied_action": {
+        "nose_wheel_deg": 40.0,
+        "throttle_left": 0.3,
+        "throttle_right": 0.05
+      },
+      "simulation": {
+        "safe": true,
+        "complete": true,
+        "on_ground": true,
+        "time_s": 4.67,
+        "start_time_s": 4.5,
+        "initial_x_m": 3.546566572464775,
+        "initial_y_m": 7.6437699629652105,
+        "initial_speed_kn": 5.879947921193829,
+        "x_m": 3.0702597130804006,
+        "y_m": 7.839463003449243,
+        "speed_kn": 5.900154126922624,
+        "heading_deg": 150.34358116283332,
+        "yaw_rate_deg_s": 44.01971019418858,
+        "roll_deg": -1.62037603859115,
+        "max_abs_roll_deg": 1.62037603859115,
+        "wheel_deg": 40,
+        "max_wheel_deg": 40,
+        "max_speed_kn": 5.900154126922624
+      },
+      "simulation_file": "data\\runs\\run-8deb2c3e180a\\realtime-1b20ef85\\response_010.json"
+    }
+  }
+]

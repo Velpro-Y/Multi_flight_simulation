@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .schemas import EngineFailureParameters
+from .schemas import EngineFailureParameters, GroundDirectionParameters
 
 
 SCHEMA_VERSION = "0.2.0-draft.1"
@@ -19,7 +19,7 @@ class ParameterRegistry:
                 "scene_id": scene_id,
                 "schema_version": SCHEMA_VERSION,
                 "runnable": False,
-                "reason": "刹车模块暂缓实现",
+                "reason": "地面减速完整实验流程尚未接入，保留接口",
                 "groups": [],
                 "constraints": [],
             }
@@ -28,13 +28,29 @@ class ParameterRegistry:
                 "scene_id": scene_id,
                 "schema_version": SCHEMA_VERSION,
                 "runnable": True,
-                "reason": "默认0.2.0；0.3.0候选增加左右刹车、自动刹车模式和随速限角观测。通过prompt_version显式选择，动作格式见/api/ground-direction/action-schemas",
-                "groups": [],
-                "constraints": [],
+                "reason": "0.2/0.3逐步协议支持参数化右转；0.3.0仍为刹车候选版本",
+                "requires_preparation": False,
+                "submit_to": "/api/runs",
+                "parameter_field": "parameters",
+                "supported_prompt_versions": ["0.2.0", "0.3.0"],
+                "groups": [{"id": "ground_experiment", "label": "地面状态与目标", "fields": [
+                    _field(name, label, unit, getattr(GroundDirectionParameters(), name), lo, hi)
+                    for name, label, unit, lo, hi in [
+                        ("initial_speed_kn", "初始地速", "kn", 0, 5),
+                        ("target_nose_wheel_deg", "目标前轮角", "deg", 20, 75),
+                        ("target_heading_change_deg", "目标航向变化", "deg", 150, 180),
+                        ("max_simulation_time_s", "最长仿真时间", "s", 5, 20),
+                    ]
+                ]}],
+                "constraints": ["仅支持右转；初始航向、位置和轮角为0",
+                                "达到5kn前禁止转向；达到目标航向且运动反向后结束",
+                                "参数范围为接口边界，不保证每个组合都完成实验"],
             }
         raise KeyError(f"Unknown scene_id: {scene_id}")
 
     def defaults(self, scene_id: str) -> dict[str, Any]:
+        if scene_id == "ground_direction":
+            return GroundDirectionParameters().model_dump()
         if scene_id != "engine_failure":
             raise KeyError(f"No parameter defaults for scene: {scene_id}")
         return EngineFailureParameters().model_dump()

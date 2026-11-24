@@ -1,12 +1,28 @@
 function ground_realtime_worker(folder,protocol)
 % One MATLAB process, continuous operating-point state, direct LLM controls.
 brakeProtocol=nargin>1 && strcmp(protocol,'brake');
+config=struct('initial_speed_kn',0,'target_nose_wheel_deg',75, ...
+    'target_heading_change_deg',177,'max_simulation_time_s',20);
+configFile=fullfile(folder,'configuration.json');
+if exist(configFile,'file')
+    supplied=jsondecode(fileread(configFile));
+    names=fieldnames(config);
+    for k=1:numel(names)
+        if isfield(supplied,names{k}), config.(names{k})=supplied.(names{k}); end
+    end
+end
+assert(all(isfinite([config.initial_speed_kn config.target_nose_wheel_deg ...
+    config.target_heading_change_deg config.max_simulation_time_s])));
+assert(config.initial_speed_kn>=0 && config.initial_speed_kn<=5);
+assert(config.target_nose_wheel_deg>=20 && config.target_nose_wheel_deg<=75);
+assert(config.target_heading_change_deg>=150 && config.target_heading_change_deg<=180);
+assert(config.max_simulation_time_s>=5 && config.max_simulation_time_s<=20);
 model='beaver_agent_env_ground_static_preserved';
 if brakeProtocol, model='beaver_agent_env_ground_brake'; end
 load_system(fullfile(fileparts(mfilename('fullpath')),[model '.slx']));
 cleanup=onCleanup(@() close_system(model,0));
 mw=get_param(model,'ModelWorkspace'); g=getVariable(mw,'GroundStatic');
-g.InitialPosition=[0 0 -1.44]; g.InitialVelocity=[0 0 0];
+g.InitialPosition=[0 0 -1.44]; g.InitialVelocity=[config.initial_speed_kn*0.5144444444 0 0];
 g.InitialAttitude=[0 0 0]; g.InitialAngularRates=[0 0 0];
 g.PowerOff=0; g.ParkingBrakeCmd=0; assignin(mw,'GroundStatic',g);
 if brakeProtocol
@@ -64,16 +80,16 @@ mp=get_param([model '/RtWatch'],'PortHandles');
 add_line(model,sp.Outport(9),mp.Inport(1)); add_line(model,sp.Outport(7),mp.Inport(2));
 add_block('simulink/Discrete/Zero-Order Hold',[model '/RtWatchSample'],'SampleTime','0.01');
 add_block('simulink/User-Defined Functions/Fcn',[model '/RtStopCondition'], ...
-    'Expr','(u(1)>=177*pi/180)||(abs(u(2))>=10*pi/180)');
+    'Expr',sprintf('(u(1)>=%.17g*pi/180)||(abs(u(2))>=10*pi/180)',config.target_heading_change_deg));
 add_block('simulink/Sinks/Stop Simulation',[model '/RtStop']);
 add_line(model,'RtWatch/1','RtWatchSample/1'); add_line(model,'RtWatchSample/1','RtStopCondition/1');
 add_line(model,'RtStopCondition/1','RtStop/1');
 set_param(model,'SaveOutput','off','SaveFinalState','on','FinalStateName','xFinal', ...
     'SaveCompleteFinalSimState','on');
 set_param(model,'FastRestart','on');
-writeJson(fullfile(folder,'ready.json'),struct('ready',true));
+writeJson(fullfile(folder,'ready.json'),struct('ready',true,'parameters',config));
 time=0; checkpoint=[];
-for seq=1:40
+for seq=1:ceil(config.max_simulation_time_s/0.5)
     requestFile=fullfile(folder,sprintf('request_%03d.json',seq));
     timer=tic;
     while ~exist(requestFile,'file')
@@ -84,7 +100,7 @@ for seq=1:40
         request=jsondecode(fileread(requestFile));
         assert(request.throttle_left>=0 && request.throttle_left<=0.4);
         assert(request.throttle_right>=0 && request.throttle_right<=0.4);
-        assert(abs(request.nose_wheel_deg)<=75);
+        assert(request.nose_wheel_deg>=0 && request.nose_wheel_deg<=config.target_nose_wheel_deg);
         in=Simulink.SimulationInput(model);
         in=in.setVariable('RtLeft',request.throttle_left);
         in=in.setVariable('RtRight',request.throttle_right);
@@ -99,7 +115,7 @@ for seq=1:40
             in=in.setVariable('RtBrakeMode',double(request.brake_system_mode));
             in=in.setVariable('RtBrakeArmed',double(request.auto_brake_armed));
         end
-        in=in.setModelParameter('StopTime',num2str(time+0.5,17));
+        in=in.setModelParameter('StopTime',num2str(min(time+0.5,config.max_simulation_time_s),17));
         if ~isempty(checkpoint), in=in.setInitialState(checkpoint); end
         out=sim(in); checkpoint=out.xFinal;
         t=vec(out.tout); x=vec(out.Xe); y=vec(out.Ye); psi=vec(out.psi);
@@ -109,7 +125,7 @@ for seq=1:40
         safe=all(isfinite([t;x;y;psi;roll;u;v;r;contact;wheel])) && ...
             max(abs(roll))<deg2rad(10) && all(contact>0.5);
         reverse=u(end)*cos(psi(end))-v(end)*sin(psi(end))<0;
-        complete=safe && rad2deg(psi(end))>=177 && reverse;
+        complete=safe && rad2deg(psi(end))>=config.target_heading_change_deg && reverse;
         idx=unique(round(linspace(1,numel(t),min(31,numel(t)))));
         result=struct('safe',safe,'complete',complete,'on_ground',all(contact>0.5), ...
             'time_s',time,'start_time_s',t(1),'initial_x_m',x(1),'initial_y_m',y(1), ...
@@ -137,7 +153,7 @@ for seq=1:40
             result.trajectory.steering_limit_deg=lim(idx);
         end
         writeJson(fullfile(folder,sprintf('response_%03d.json',seq)),result);
-        if complete || ~safe, break; end
+        if complete || ~safe || time>=config.max_simulation_time_s-1e-8, break; end
     catch exception
         writeJson(fullfile(folder,sprintf('response_%03d.json',seq)),struct('error',getReport(exception,'extended','hyperlinks','off')));
         break;

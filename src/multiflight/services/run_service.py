@@ -15,6 +15,7 @@ from ..dify_client import DifyClient
 from ..evaluation import RunEvaluator
 from ..prompts import PromptCompiler, PromptStore
 from ..scene_registry import SceneRegistry
+from ..schemas import GroundDirectionParameters
 from ..settings import RUN_DIR
 from ..simulation import SimulationManager
 from ..simulation.ground_realtime import GroundRealtimeAction, GroundBrakeAction
@@ -56,7 +57,15 @@ class RunService:
         prompt_version: Optional[str] = None,
         query: Optional[str] = None,
         preparation: Optional[dict[str, Any]] = None,
+        parameters: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
+        if parameters is not None or scene_id == "ground_direction":
+            version = self.prompts.get(scene_id, prompt_version)["version"]
+            realtime = scene_id == "ground_direction" and version.startswith(("0.2.", "0.3."))
+            if parameters is not None and not realtime:
+                raise ValueError("参数化地面实验仅支持场景三0.2/0.3逐步协议")
+            if realtime:
+                parameters = GroundDirectionParameters.model_validate(parameters or {}).model_dump()
         run_id = f"run-{uuid.uuid4().hex[:12]}"
         payload = {
             "scene_id": scene_id,
@@ -66,7 +75,7 @@ class RunService:
                 preparation.get("preparation_id") if preparation else None
             ),
             "parameters": (
-                preparation.get("normalized_parameters") if preparation else None
+                preparation.get("normalized_parameters") if preparation else parameters
             ),
         }
         job = self.jobs.create(run_id, "run", payload, "等待执行")
@@ -77,6 +86,7 @@ class RunService:
             prompt_version,
             query,
             preparation,
+            parameters,
         )
         return job
 
@@ -87,11 +97,12 @@ class RunService:
         prompt_version: Optional[str],
         query: Optional[str],
         preparation: Optional[dict[str, Any]] = None,
+        parameters: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         try:
             with self.execution_lock:
                 return self._execute_locked(
-                    run_id, scene_id, prompt_version, query, preparation
+                    run_id, scene_id, prompt_version, query, preparation, parameters
                 )
         except Exception as exc:
             self.jobs.update(
@@ -110,17 +121,27 @@ class RunService:
         prompt_version: Optional[str],
         query: Optional[str],
         preparation: Optional[dict[str, Any]] = None,
+        parameters: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         scene = self.scenes.get(scene_id)
         if scene.status != "enabled":
             raise ValueError(scene.unavailable_reason or f"Scene {scene_id} is unavailable")
 
         version_record = self.prompts.get(scene_id, prompt_version)
+        version = version_record["version"]
+        brake_protocol = scene_id == "ground_direction" and version.startswith("0.3.")
+        realtime = scene_id == "ground_direction" and version.startswith(("0.2.", "0.3."))
+        if parameters is not None and not realtime:
+            raise ValueError("参数化地面实验仅支持场景三0.2/0.3逐步协议")
+        context = preparation
+        if realtime:
+            parameters = GroundDirectionParameters.model_validate(parameters or {}).model_dump()
+            context = {"normalized_parameters": parameters}
         artifact = self.compiler.compile(
             scene,
             version_record["version"],
             version_record.get("addendum", ""),
-            runtime_context=preparation,
+            runtime_context=context,
         )
         self.jobs.update(
             run_id,
@@ -128,9 +149,8 @@ class RunService:
             progress=0.02,
             message=f"已加载提示词 {artifact.version}，等待Dify Agent调用仿真工具",
         )
-        brake_protocol = scene_id == "ground_direction" and artifact.version.startswith("0.3.")
-        realtime = scene_id == "ground_direction" and artifact.version.startswith(("0.2.", "0.3."))
-        configuration = {"mode": "realtime", "brake_protocol": brake_protocol} if realtime else preparation
+        configuration = {"mode": "realtime", "brake_protocol": brake_protocol,
+                         "normalized_parameters": parameters} if realtime else preparation
         self.simulator.begin_run(
             run_id,
             scene_id,
@@ -147,7 +167,7 @@ class RunService:
                 replay_path = (preparation or {}).get("replay_decisions_file")
                 replay = json.loads(Path(replay_path).read_text(encoding="utf-8")) if replay_path else []
                 try:
-                    for index in range(40):
+                    for index in range(math.ceil(parameters["max_simulation_time_s"] / 0.5)):
                         observation = {k: round(v, 4) if isinstance(v, float) else v
                                        for k, v in result["state"].items()}
                         if index < len(replay):
@@ -194,7 +214,7 @@ class RunService:
                 records,
                 artifact.version,
                 artifact.prompt_hash,
-                runtime_context=preparation,
+                runtime_context=context,
             )
             result = {
                 "run_id": run_id,
@@ -203,7 +223,7 @@ class RunService:
                     preparation.get("preparation_id") if preparation else None
                 ),
                 "parameters": (
-                    preparation.get("normalized_parameters") if preparation else None
+                    context.get("normalized_parameters") if context else None
                 ),
                 "trim": preparation.get("trim") if preparation else None,
                 "prompt": {
@@ -234,8 +254,11 @@ class RunService:
         self, run_id: str, step_count: int, result: dict[str, Any]
     ) -> None:
         try:
-            scene_id = self.jobs.get(run_id)["payload"]["scene_id"]
+            payload = self.jobs.get(run_id)["payload"]
+            scene_id = payload["scene_id"]
             max_steps = self.scenes.get(scene_id).safety.max_steps
+            if scene_id == "ground_direction" and payload.get("parameters"):
+                max_steps = math.ceil(payload["parameters"]["max_simulation_time_s"] / .5)
             progress = min(0.90, 0.05 + 0.80 * step_count / max_steps)
             phase = result.get("state", {}).get("flight_phase", "UNKNOWN")
             self.jobs.update(

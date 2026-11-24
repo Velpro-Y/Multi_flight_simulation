@@ -8,7 +8,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import JobStore
@@ -240,7 +240,17 @@ def publish_prompt(
 
 
 @app.post("/api/runs", status_code=202, tags=["runs"])
-def start_run(request: RunRequest) -> dict[str, Any]:
+def start_run(request: RunRequest = Body(openapi_examples={
+    "engine_failure": {"summary": "场景一：默认参数", "value": {"scene_id": "engine_failure"}},
+    "ground_direction": {"summary": "场景三：参数化右转", "value": {
+        "scene_id": "ground_direction", "prompt_version": "0.2.0", "parameters": {
+            "initial_speed_kn": 5, "target_nose_wheel_deg": 40,
+            "target_heading_change_deg": 150, "max_simulation_time_s": 20}}},
+    "ground_brake": {"summary": "场景三：刹车候选协议", "value": {
+        "scene_id": "ground_direction", "prompt_version": "0.3.0", "parameters": {
+            "initial_speed_kn": 0, "target_nose_wheel_deg": 75,
+            "target_heading_change_deg": 177, "max_simulation_time_s": 20}}},
+})) -> dict[str, Any]:
     try:
         scene = scenes.get(request.scene_id)
         if scene.status != "enabled":
@@ -258,11 +268,14 @@ def start_run(request: RunRequest) -> dict[str, Any]:
             request.prompt_version,
             request.query,
             preparation,
+            parameters=request.parameters.model_dump() if request.parameters is not None else None,
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except PreparationError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail()) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.get("/api/runs", tags=["runs"])

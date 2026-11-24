@@ -1,0 +1,252 @@
+[
+  {
+    "index": 1,
+    "state": {
+      "flight_phase": "READY",
+      "time": 0,
+      "speed_kn": 5.0,
+      "heading_deg": 0,
+      "yaw_rate_deg_s": 0,
+      "wheel_deg": 0,
+      "x_m": 0,
+      "y_m": 0,
+      "roll_deg": 0,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 10.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.25
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 2,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 0.5,
+      "speed_kn": 5.338544221083153,
+      "heading_deg": 2.7690592114215593,
+      "yaw_rate_deg_s": 8.942593447056401,
+      "wheel_deg": 10,
+      "x_m": 1.3270353062932476,
+      "y_m": 0.04993798848355925,
+      "roll_deg": -0.40468137144916155,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 20.0,
+      "throttle_left": 0.26,
+      "throttle_right": 0.1
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 3,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 1,
+      "speed_kn": 5.204458897328075,
+      "heading_deg": 9.840778902195424,
+      "yaw_rate_deg_s": 17.4430126606565,
+      "wheel_deg": 20,
+      "x_m": 2.6593562591729603,
+      "y_m": 0.27608544167993654,
+      "roll_deg": -0.7218650549864984,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 32.0,
+      "throttle_left": 0.35,
+      "throttle_right": 0.05
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 4,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 1.5,
+      "speed_kn": 5.076605457321034,
+      "heading_deg": 21.691392304765987,
+      "yaw_rate_deg_s": 28.912190528979934,
+      "wheel_deg": 32,
+      "x_m": 3.8812490075698096,
+      "y_m": 0.7672478144515108,
+      "roll_deg": -1.0294994734358276,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.0
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 5,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 2,
+      "speed_kn": 5.178412887867503,
+      "heading_deg": 39.35677661316185,
+      "yaw_rate_deg_s": 39.16712194407785,
+      "wheel_deg": 40,
+      "x_m": 4.872548999205526,
+      "y_m": 1.6062233236191432,
+      "roll_deg": -1.3800089900300245,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.05
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 6,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 2.5,
+      "speed_kn": 5.5901927660746304,
+      "heading_deg": 59.63333036361248,
+      "yaw_rate_deg_s": 42.00744233513807,
+      "wheel_deg": 40,
+      "x_m": 5.544698126477172,
+      "y_m": 2.8098637971997835,
+      "roll_deg": -1.3868178254536756,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.25,
+      "throttle_right": 0.1
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 7,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 3,
+      "speed_kn": 5.578302517299641,
+      "heading_deg": 80.51186016985814,
+      "yaw_rate_deg_s": 41.67601467285627,
+      "wheel_deg": 40,
+      "x_m": 5.76058738739664,
+      "y_m": 4.222764954250783,
+      "roll_deg": -1.442009185189257,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.0,
+      "throttle_right": 0.0
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 8,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 3.5,
+      "speed_kn": 5.422499480961778,
+      "heading_deg": 101.04527578739817,
+      "yaw_rate_deg_s": 40.48725628176693,
+      "wheel_deg": 40,
+      "x_m": 5.463223845126634,
+      "y_m": 5.598306113654588,
+      "roll_deg": -1.3445001871582858,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.32,
+      "throttle_right": 0.06
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 9,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 4,
+      "speed_kn": 5.49081028567869,
+      "heading_deg": 121.48061987465488,
+      "yaw_rate_deg_s": 41.12243962607256,
+      "wheel_deg": 40,
+      "x_m": 4.711392382044945,
+      "y_m": 6.774447043737103,
+      "roll_deg": -1.352225813327829,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.4,
+      "throttle_right": 0.0
+    },
+    "source": "live_dify"
+  },
+  {
+    "index": 10,
+    "state": {
+      "flight_phase": "TURN",
+      "time": 4.5,
+      "speed_kn": 5.879947921193829,
+      "heading_deg": 142.854281703676,
+      "yaw_rate_deg_s": 44.15644355512393,
+      "wheel_deg": 40,
+      "x_m": 3.546566572464775,
+      "y_m": 7.6437699629652105,
+      "roll_deg": -1.555385584887614,
+      "on_ground": true,
+      "reached_5kn": true,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "action": {
+      "nose_wheel_deg": 40.0,
+      "throttle_left": 0.3,
+      "throttle_right": 0.05
+    },
+    "source": "live_dify"
+  }
+]

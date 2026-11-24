@@ -1,6 +1,7 @@
 """Dify controls each 0.5 simulated seconds; only rate/limit protection below it."""
 
 import json
+import math
 import os
 import subprocess
 import time
@@ -10,6 +11,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ..settings import PROJECT_ROOT, RUN_DIR
+from ..schemas import GroundDirectionParameters
 
 
 class GroundRealtimeAction(BaseModel):
@@ -35,6 +37,10 @@ class GroundBrakeAction(GroundRealtimeAction):
 class GroundRealtimeEnv:
     def __init__(self, run_id, configuration=None):
         self.brake_protocol = bool((configuration or {}).get("brake_protocol"))
+        self.parameters = GroundDirectionParameters.model_validate(
+            (configuration or {}).get("normalized_parameters", {})
+        )
+        self.max_steps = math.ceil(self.parameters.max_simulation_time_s / .5)
         self.folder = RUN_DIR / run_id / ("realtime-" + uuid.uuid4().hex[:8])
         self.folder.mkdir(parents=True)
         self.state = None
@@ -58,6 +64,9 @@ class GroundRealtimeEnv:
         return response
 
     def reset(self):
+        (self.folder / "configuration.json").write_text(
+            self.parameters.model_dump_json(), encoding="utf-8"
+        )
         quote = lambda p: str(p).replace("'", "''")
         protocol = ", 'brake'" if self.brake_protocol else ""
         command = (f"addpath('{quote(PROJECT_ROOT / 'simulink03')}'); "
@@ -67,11 +76,17 @@ class GroundRealtimeEnv:
             [os.getenv("MATLAB_EXECUTABLE", "D:/soft/MATLAB/bin/matlab.exe"), "-batch", command],
             cwd=str(self.folder), stdout=self.log, stderr=subprocess.STDOUT,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-        self._wait("ready.json", timeout=180 if self.brake_protocol else 90)
-        self.state = {"flight_phase": "READY", "time": 0, "speed_kn": 0,
+        # Cold MATLAB/Simulink initialization can exceed 90 seconds for either model.
+        self._wait("ready.json", timeout=180)
+        self.reached_5 = self.parameters.initial_speed_kn >= 5
+        self.sequence = 0
+        self.state = {"flight_phase": "READY", "time": 0, "speed_kn": self.parameters.initial_speed_kn,
                       "heading_deg": 0, "yaw_rate_deg_s": 0, "wheel_deg": 0,
                       "x_m": 0, "y_m": 0, "roll_deg": 0,
-                      "on_ground": True, "reached_5kn": False}
+                      "on_ground": True, "reached_5kn": self.reached_5,
+                      "target_nose_wheel_deg": self.parameters.target_nose_wheel_deg,
+                      "target_heading_change_deg": self.parameters.target_heading_change_deg,
+                      "max_simulation_time_s": self.parameters.max_simulation_time_s}
         if self.brake_protocol:
             self.state.update(brake_left=0., brake_right=0., brake_system_mode=0,
                               auto_brake_armed=False, auto_brake_active=False,
@@ -84,6 +99,8 @@ class GroundRealtimeEnv:
     def step(self, raw_action):
         action_type = GroundBrakeAction if self.brake_protocol else GroundRealtimeAction
         action = action_type.model_validate(raw_action)
+        if action.nose_wheel_deg > self.parameters.target_nose_wheel_deg:
+            raise ValueError("前轮指令超过本次实验的目标转角")
         if self.state is None or self.state["flight_phase"] in {"SUCCESS", "FAILED"}:
             raise ValueError("Reset required or run already finished")
         if not self.reached_5 and action.nose_wheel_deg != 0:
@@ -95,13 +112,17 @@ class GroundRealtimeEnv:
         temporary.replace(path)
         sim = self._wait(f"response_{self.sequence:03d}.json", timeout=90)
         self.reached_5 |= sim["speed_kn"] >= 5
-        done = sim["complete"] or not sim["safe"] or self.sequence >= 40
+        done = (sim["complete"] or not sim["safe"] or self.sequence >= self.max_steps
+                or sim["time_s"] >= self.parameters.max_simulation_time_s - 1e-8)
         phase = "SUCCESS" if sim["complete"] else "FAILED" if done else "TURN" if self.reached_5 else "ACCELERATE"
         manual_used = self.state.get("manual_brake_used", False)
         auto_used = self.state.get("auto_brake_used", False)
         self.state = {"flight_phase": phase, "time": sim["time_s"],
                       **{k: sim[k] for k in ["speed_kn", "heading_deg", "yaw_rate_deg_s", "wheel_deg", "x_m", "y_m", "roll_deg", "on_ground"]},
-                      "reached_5kn": self.reached_5}
+                      "reached_5kn": self.reached_5,
+                      "target_nose_wheel_deg": self.parameters.target_nose_wheel_deg,
+                      "target_heading_change_deg": self.parameters.target_heading_change_deg,
+                      "max_simulation_time_s": self.parameters.max_simulation_time_s}
         applied = action.model_dump()
         if self.brake_protocol:
             self.state.update({k: sim[k] for k in ["brake_left", "brake_right", "brake_system_mode",

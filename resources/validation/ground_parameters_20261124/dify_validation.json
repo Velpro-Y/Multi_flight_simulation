@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-24",
+  "run_id": "run-8deb2c3e180a",
+  "passed": true,
+  "tests_passed": 58,
+  "base_commit": "5363774",
+  "decision_source": "live_dify",
+  "model_calls": 10,
+  "reused_decisions": 0,
+  "initialization_retry": {
+    "run_id": "run-2a92c516e95b",
+    "status": "failed",
+    "error": "MATLAB response timed out: ready.json",
+    "dify_calls": 0,
+    "fix": "Both ground protocols now wait up to 180s for MATLAB ready; control interval remains 0.5s"
+  },
+  "artifact_transformations": [
+    "Local absolute project paths normalized to relative paths in portable JSON copies",
+    "dify_decisions.json retains index, full observed state, parsed action and source; full Dify responses stay in local run directory",
+    "Trailing whitespace removed from portable SVG copy; path coordinates and rendering unchanged"
+  ],
+  "raw_source_sha256": {
+    "parameterized_dify_verification.json": "a5db102ab6f43d42315b3f55a7c47d848fa452965bc03f33202dd79d44d30792",
+    "records.json": "90fed0f47179ad018cec336a022951b431a16295b6a0ae52a398dbf9d0570603",
+    "compiled_prompt.md": "808526cf63d3177219e85456dd9b17edc3d0bed6ddf2acf61b3b1b26a28369b5",
+    "decision_trace.csv": "4f65b637dfab30213bdccc6fd0e20dec10a31db0947825226602986f30369827",
+    "realtime_trajectory.csv": "5cf4f249136719e0bd86f2825b04ee33d42afed358f0f88aa27e51e42cf158bc",
+    "realtime_visualization.png": "64bd45de084919eceb7fe2a5a37264ec36a8f41e2133cd5dbc23935cbb3bdb84",
+    "realtime_visualization.svg": "5aca7bde5b04a16567a2af3d871ac05418b7972f06a416ca205ccc80aa6a532b",
+    "realtime_visualization_manifest.json": "b34922baf5131a53755dcb60a6b3ea00c68e4f158670e6272019c60b8d43e865"
+  },
+  "source_sha256": {
+    "src/multiflight/simulation/ground_realtime.py": "4c921bd38df6b825c5f38abb3ddef66666f69922f3bfef4f8ce319706543374a",
+    "src/multiflight/services/run_service.py": "04dfb97ba6f1eb94bab4e031646d2bc792bcff66cf8b262ea5e2270d46b4ec46",
+    "src/multiflight/prompts/compiler.py": "9406fd51bdb6a2fa94f73e1a6e1e5239b98bc4745323a5e831d5b1ff65be796f",
+    "simulink03/ground_realtime_worker.m": "14ff7d6c43889e83968d14b84c51ebe51c9f7388ab6d315923daf65e3f28d251",
+    "scripts/plot_ground_realtime.py": "7aaa4b4f1d7b29e18d9af6e6b1863bf1626ae9861bc32ee68f6ee61ee367b3f9",
+    "scripts/verify_ground_parameterized_dify.py": "cfdab58e69aa668b84f7001d1dff0728f76a87d2972a5d2c7a30bc1dc53a6490"
+  }
+}

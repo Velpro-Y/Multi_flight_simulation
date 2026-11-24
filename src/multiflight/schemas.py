@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class Action(BaseModel):
@@ -33,11 +33,30 @@ class Action(BaseModel):
         return float(value)
 
 
+class GroundDirectionParameters(BaseModel):
+    """Bounded right-turn experiment settings, shared with the MATLAB worker."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    initial_speed_kn: float = Field(default=0, ge=0, le=5)
+    target_nose_wheel_deg: float = Field(default=75, ge=20, le=75)
+    target_heading_change_deg: float = Field(default=177, ge=150, le=180)
+    max_simulation_time_s: float = Field(default=20, ge=5, le=20)
+
+
 class RunRequest(BaseModel):
     scene_id: str = "engine_failure"
     preparation_id: Optional[str] = None
     prompt_version: Optional[str] = None
     query: Optional[str] = None
+    parameters: Optional[GroundDirectionParameters] = None
+
+    @model_validator(mode="after")
+    def validate_scene_parameters(self):
+        if self.parameters is not None and self.scene_id != "ground_direction":
+            raise ValueError("parameters仅用于场景三；场景一参数请通过prepare接口提交")
+        if self.scene_id == "ground_direction" and self.preparation_id:
+            raise ValueError("场景三直接初始化，不使用场景一preparation_id")
+        return self
 
 
 class EngineFailureParameters(BaseModel):

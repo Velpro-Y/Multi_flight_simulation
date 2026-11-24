@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 from ..scene_registry import SceneSpec
 from ..settings import PROMPT_DIR
-from ..schemas import EngineFailureParameters
+from ..schemas import EngineFailureParameters, GroundDirectionParameters
 from ..settings import (
     ENGINE_OUT_CLIMB_TRIM,
     ENGINE_OUT_DESCENT_TRIM,
@@ -60,6 +60,18 @@ class PromptCompiler:
         if scene.scene_id == "ground_direction" and version.startswith("0.3."):
             protected = [("ground_brake_contract", self._read("ground_brake_contract.md"))]
             scene_text = self._read("scenes/ground_direction_brake.md")
+        if scene.scene_id == "ground_direction" and version.startswith(("0.2.", "0.3.")):
+            parameters = GroundDirectionParameters.model_validate(
+                (runtime_context or {}).get("normalized_parameters", {})
+            ).model_dump()
+            def render(text):
+                for key, value in parameters.items():
+                    text = text.replace("{{" + key + "}}", f"{value:g}")
+                return text
+            protected = [(name, render(text)) for name, text in protected]
+            scene_text = render(scene_text)
+            protected.append(("ground_runtime_parameters", "# 本次地面实验参数\n" +
+                              "\n".join(f"- {key}: {value:g}" for key, value in parameters.items())))
         if scene.scene_id == "engine_failure":
             context = _engine_failure_context(runtime_context)
             protected.append(

@@ -1,0 +1,224 @@
+{
+  "date": "2026-11-24",
+  "base_commit": "5363774",
+  "uncommitted_working_tree": true,
+  "scope": "Real MATLAB initialization, target and deadline verification; fixed test commands, no Dify decisions",
+  "tests": {
+    "passed": 58,
+    "dify_calls": 0
+  },
+  "runs": [
+    {
+      "run_id": "ground-parameters-default-37a15d45",
+      "case": "default",
+      "parameters": {
+        "initial_speed_kn": 0,
+        "target_nose_wheel_deg": 75,
+        "target_heading_change_deg": 177,
+        "max_simulation_time_s": 20
+      },
+      "checks": {
+        "reset_speed": true,
+        "model_initial_speed": true,
+        "safe_and_grounded": true,
+        "time_limit": true,
+        "wheel_bound": true,
+        "terminal": true,
+        "completed_at_target": true,
+        "evaluation_matches_outcome": true
+      },
+      "passed": true,
+      "error": null,
+      "dify_calls": 0,
+      "decision_source": "fixed_model_test",
+      "protocol_version": "0.2.0",
+      "steps": 18,
+      "actual_initial_speed_kn": 0,
+      "final_time_s": 8.700000000000001,
+      "final_heading_deg": 177.20510174185722,
+      "max_wheel_deg": 75,
+      "evaluation": {
+        "scene_id": "ground_direction",
+        "prompt_version": "0.2.0",
+        "prompt_hash": "fixed-model-test",
+        "passed": true,
+        "hard_gates": {
+          "reset_and_multiple_decisions": true,
+          "format_valid": true,
+          "no_early_steering": true,
+          "state_continuity": true,
+          "state_safe": true,
+          "actual_75_reached": true,
+          "completed": true
+        },
+        "failure_labels": [],
+        "phase_trace": [
+          "READY",
+          "ACCELERATE",
+          "TURN",
+          "SUCCESS"
+        ],
+        "metrics": {
+          "steps": 18,
+          "score": 100.0,
+          "time_s": 8.700000000000001,
+          "heading_change_deg": 177.20510174185722,
+          "max_wheel_deg": 75
+        },
+        "parameters": {
+          "initial_speed_kn": 0.0,
+          "target_nose_wheel_deg": 75.0,
+          "target_heading_change_deg": 177.0,
+          "max_simulation_time_s": 20.0
+        },
+        "scope": "Dify每0.5秒仿真时间直接决定油门和前轮角，无PI代驾；非墙钟硬实时"
+      },
+      "records_path": "data/runs/ground-parameters-default-37a15d45/records.json"
+    },
+    {
+      "run_id": "ground-parameters-custom-08798268",
+      "case": "custom",
+      "parameters": {
+        "initial_speed_kn": 5.0,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 20.0
+      },
+      "checks": {
+        "reset_speed": true,
+        "model_initial_speed": true,
+        "safe_and_grounded": true,
+        "time_limit": true,
+        "wheel_bound": true,
+        "terminal": true,
+        "completed_at_target": true,
+        "evaluation_matches_outcome": true
+      },
+      "passed": true,
+      "error": null,
+      "dify_calls": 0,
+      "decision_source": "fixed_model_test",
+      "protocol_version": "0.2.0",
+      "steps": 13,
+      "actual_initial_speed_kn": 5,
+      "final_time_s": 6.3100000000000005,
+      "final_heading_deg": 150.12260000834644,
+      "max_wheel_deg": 40,
+      "evaluation": {
+        "scene_id": "ground_direction",
+        "prompt_version": "0.2.0",
+        "prompt_hash": "fixed-model-test",
+        "passed": true,
+        "hard_gates": {
+          "reset_and_multiple_decisions": true,
+          "format_valid": true,
+          "no_early_steering": true,
+          "state_continuity": true,
+          "state_safe": true,
+          "target_angle_reached": true,
+          "completed": true
+        },
+        "failure_labels": [],
+        "phase_trace": [
+          "READY",
+          "TURN",
+          "SUCCESS"
+        ],
+        "metrics": {
+          "steps": 13,
+          "score": 100.0,
+          "time_s": 6.3100000000000005,
+          "heading_change_deg": 150.12260000834644,
+          "max_wheel_deg": 40
+        },
+        "parameters": {
+          "initial_speed_kn": 5.0,
+          "target_nose_wheel_deg": 40.0,
+          "target_heading_change_deg": 150.0,
+          "max_simulation_time_s": 20.0
+        },
+        "scope": "Dify每0.5秒仿真时间直接决定油门和前轮角，无PI代驾；非墙钟硬实时"
+      },
+      "records_path": "data/runs/ground-parameters-custom-08798268/records.json"
+    },
+    {
+      "run_id": "ground-parameters-brake_deadline-428e8d14",
+      "case": "brake_deadline",
+      "parameters": {
+        "initial_speed_kn": 2.0,
+        "target_nose_wheel_deg": 40.0,
+        "target_heading_change_deg": 150.0,
+        "max_simulation_time_s": 5.25
+      },
+      "checks": {
+        "reset_speed": true,
+        "model_initial_speed": true,
+        "safe_and_grounded": true,
+        "time_limit": true,
+        "wheel_bound": true,
+        "terminal": true,
+        "fractional_deadline": true,
+        "failed_phase": true,
+        "evaluation_matches_outcome": true
+      },
+      "passed": true,
+      "error": null,
+      "dify_calls": 0,
+      "decision_source": "fixed_model_test",
+      "protocol_version": "0.3.0",
+      "steps": 11,
+      "actual_initial_speed_kn": 2,
+      "final_time_s": 5.25,
+      "final_heading_deg": 64.28349964076058,
+      "max_wheel_deg": 40,
+      "evaluation": {
+        "scene_id": "ground_direction",
+        "prompt_version": "0.3.0",
+        "prompt_hash": "fixed-model-test",
+        "passed": false,
+        "hard_gates": {
+          "reset_and_multiple_decisions": true,
+          "format_valid": true,
+          "no_early_steering": true,
+          "state_continuity": true,
+          "state_safe": true,
+          "target_angle_reached": true,
+          "completed": false,
+          "brake_routing_valid": true,
+          "steering_authority_valid": true
+        },
+        "failure_labels": [
+          "COMPLETED"
+        ],
+        "phase_trace": [
+          "READY",
+          "ACCELERATE",
+          "TURN",
+          "FAILED"
+        ],
+        "metrics": {
+          "steps": 11,
+          "score": 88.88888888888889,
+          "time_s": 5.25,
+          "heading_change_deg": 64.28349964076058,
+          "max_wheel_deg": 40
+        },
+        "parameters": {
+          "initial_speed_kn": 2.0,
+          "target_nose_wheel_deg": 40.0,
+          "target_heading_change_deg": 150.0,
+          "max_simulation_time_s": 5.25
+        },
+        "scope": "Dify逐步决定油门、前轮角及刹车，保留随速限角和互斥自动刹车规则"
+      },
+      "records_path": "data/runs/ground-parameters-brake_deadline-428e8d14/records.json"
+    }
+  ],
+  "source_sha256": {
+    "simulink03/ground_realtime_worker.m": "14ff7d6c43889e83968d14b84c51ebe51c9f7388ab6d315923daf65e3f28d251",
+    "src/multiflight/simulation/ground_realtime.py": "6b6d2fc8cfe466fcf9f062943800457f1efc1d147d26d56b2b42eac7d71e458d",
+    "src/multiflight/services/run_service.py": "04dfb97ba6f1eb94bab4e031646d2bc792bcff66cf8b262ea5e2270d46b4ec46",
+    "src/multiflight/schemas.py": "47268d39f9d5916967f8208e7e17d34fa707ea65f4067888df29b367a12ed36a",
+    "src/multiflight/evaluation/evaluator.py": "01df18d340d1586d770c5e551edf447769704e846dc2efa1cf5090cc1d9a07e6"
+  }
+}

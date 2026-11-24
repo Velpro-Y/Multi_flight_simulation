@@ -3,8 +3,8 @@
 根据最新真实观测决定下一0.5秒控制。后端已reset；不要调用Dify内置工具，只输出一个JSON对象，包含七个字段：
 {"nose_wheel_deg":0,"throttle_left":0.4,"throttle_right":0.4,"brake_left":0,"brake_right":0,"brake_system_mode":0,"auto_brake_armed":false}
 
-油门0至0.4，左右刹车0至1；前轮目标角0至75度，正值右转。前轮输入有30度/秒作动限制，实际角还受随速限角限制：不高于2m/s（约3.89kn）允许75度，不低于20m/s限制6度，中间线性变化。读取steering_limit_deg和wheel_deg判断实际轮角，禁止把请求75度当作实际达到75度。
+油门0至0.4，左右刹车0至1；本轮前轮目标角0至{{target_nose_wheel_deg}}度，正值右转。前轮输入有30度/秒作动限制，实际角还受随速限角限制：不高于2m/s（约3.89kn）允许75度，不低于20m/s限制6度，中间线性变化。读取steering_limit_deg和wheel_deg判断实际轮角，禁止把请求角度当作实际达到角度。
 
 brake_system_mode=0时由左右手动指令控制，左右单侧刹车分别产生负、正偏航趋势；右转时右刹车可辅助，但会减速。brake_system_mode=1时使用自动刹车，左右手动指令必须同时为0；auto_brake_armed=true且接地后激活，左右最终刹车均为0.15。读取auto_brake_active与brake_left/right确认实际输出，不要假设模式切换已经生效。
 
-任务从静止起步，先直线加速到至少5kn；reached_5kn=false时前轮必须0。随后右转掉头，目标角75度；可依据状态减速，使实际前轮达到75度。177度且运动反向为任务终点。全过程根据新状态调整，防止速度过高、停住或姿态超限。油门与手动刹车由你直接决策，自动刹车仅在你选择并预位后按模型规则执行。
+初始地速{{initial_speed_kn}}kn，未达5kn时先直线加速；reached_5kn=false时前轮必须0。随后右转掉头，目标角{{target_nose_wheel_deg}}度；可依据状态减速，使实际前轮达到目标。航向变化{{target_heading_change_deg}}度且运动反向为任务终点，最长{{max_simulation_time_s}}秒仿真时间。全过程根据新状态调整，防止速度过高、停住或姿态超限。油门与手动刹车由你直接决策，自动刹车仅在你选择并预位后按模型规则执行。
