@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-24",
+  "run_id": "run-4f284b827eb5",
+  "base_commit": "07fed54",
+  "model_calls": 40,
+  "reused_decisions": 0,
+  "tests_passed": 83,
+  "candidate_accepted": false,
+  "conditions_and_gates_changed": false,
+  "source_sha256": {
+    "records.json": "e1d3bfe6c0ea3d928808c95d9551847d6f17da33bda93ee5fd8d28afae794935",
+    "decisions.json": "6786adcf76c38c66f06bf6ee4874a37951e5486a359c6f4bc906f1a6da82770c",
+    "compiled_prompt.md": "f4da3931993756d5f4375b119dcdde17228a1be3c5959900ed34bd7a9d8a9f77",
+    "evaluation.json": "224353831fa5ecea227c523ca3530c89195a12b1077d87f8dd53e8c35e489428"
+  },
+  "visual_review": "OK 2026-11-24: same figure script; target lines and failed aggregate result verified"
+}

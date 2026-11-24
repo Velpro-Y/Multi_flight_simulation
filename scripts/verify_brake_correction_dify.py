@@ -31,12 +31,13 @@ def inspect(job):
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--run-id")
+    parser.add_argument("--prompt-version",choices=["0.4.0","0.4.1"],default="0.4.0")
     args=parser.parse_args()
     with httpx.Client(base_url="http://127.0.0.1:8000",timeout=20,trust_env=False,
                       limits=httpx.Limits(max_keepalive_connections=0)) as c:
         rid=args.run_id
         if not rid:
-            response=c.post("/api/runs",json={"scene_id":"ground_direction","prompt_version":"0.4.0",
+            response=c.post("/api/runs",json={"scene_id":"ground_direction","prompt_version":args.prompt_version,
                 "parameters":GroundCorrectionParameters().model_dump()})
             response.raise_for_status();rid=response.json()["id"]
         print("RUN_ID="+rid,flush=True);last=None

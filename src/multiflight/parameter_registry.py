@@ -18,7 +18,7 @@ class ParameterRegistry:
             p = GroundCorrectionParameters()
             return {"scene_id": scene_id, "experiment": "brake_correction", "schema_version": "0.4.0-candidate",
                     "runnable": True, "requires_preparation": False, "submit_to": "/api/runs", "parameter_field": "parameters",
-                    "supported_prompt_versions": ["0.4.0"], "parameter_defaults": p.model_dump(),
+                    "supported_prompt_versions": ["0.4.0", "0.4.1"], "parameter_defaults": p.model_dump(),
                     "groups": [{"id": "correction", "label": "试验点2-4 差动刹车纠偏", "fields": [
                         _field(name, label, unit, getattr(p, name), lo, hi)
                         for name, label, unit, lo, hi in [

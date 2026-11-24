@@ -2,26 +2,61 @@
   "ground_direction": {
     "published": "0.2.0",
     "versions": {
+      "0.4.1": {
+        "version": "0.4.1",
+        "status": "candidate",
+        "name": "ground_correction_preview_feedback",
+        "description": "基于上一轮稳定性失败，加入前视偏差与航向反馈的提示策略；待同工况复验",
+        "addendum": "# 回收后对正候选策略\n上一版失效原因是进入30ft后仍按偏差正负反复制动，航向没有回正。改用前视偏差和航向/偏航反馈；不要只看飞机在中线哪一侧决定刹车。\ncorrection_triggered=false时左右刹车为0。触发后每轮按当前真实观测计算下列反馈策略：\ne=lateral_deviation_ft；v=lateral_velocity_m_s；h=heading_deg；r=yaw_rate_deg_s。s在e>0时为1，否则为-1。\ne_pred=e+2*v/0.3048；h_ref=clip(-0.3*(e_pred-15*s),-6,6)。\nd=clip(0.12*(h-h_ref)+0.4*r,-0.8,0.8)。brake_left=max(d,0)，brake_right=max(-d,0)，保留三位小数。\n前轮0，两侧油门0，手动模式0，auto_brake_armed=false。即使e仍为正，若h和r需要抑制向左横移，d可以为负，此时应右刹车；进入区间后持续依据新观测计算，直到后端done。\n由你每轮读取真实状态、计算并输出本轮七字段JSON，不输出计算过程或整段计划。",
+        "created_from": "0.4.0",
+        "regression_report": {
+          "passed": false,
+          "validation_run": "run-4f284b827eb5",
+          "baseline_run": "run-e9ca84f93122",
+          "reason": "Same-condition 30ft recovery regressed; candidate actions did not reliably follow the prompt policy",
+          "candidate_final_deviation_ft": 33.84843539741522,
+          "baseline_final_deviation_ft": -6.9814695222667265
+        }
+      },
       "0.4.0": {
-        "version": "0.4.0", "status": "candidate", "name": "ground_brake_correction",
+        "version": "0.4.0",
+        "status": "candidate",
+        "name": "ground_brake_correction",
         "description": "试验点2-4差动刹车纠偏：100kn滑跑、超过50ft触发、回收30ft内稳定保持",
-        "addendum": "", "created_from": "0.3.0", "regression_report": null
+        "addendum": "",
+        "created_from": "0.3.0",
+        "regression_report": null
       },
       "0.3.0": {
-        "version": "0.3.0", "status": "candidate", "name": "ground_brake_candidate",
+        "version": "0.3.0",
+        "status": "candidate",
+        "name": "ground_brake_candidate",
         "description": "修正刹车选择器，增加左右刹车、自动刹车选择和随速限角观测",
-        "addendum": "", "created_from": "0.2.0", "regression_report": null
+        "addendum": "",
+        "created_from": "0.2.0",
+        "regression_report": null
       },
       "0.2.0": {
-        "version": "0.2.0", "status": "published", "name": "ground_realtime_baseline",
+        "version": "0.2.0",
+        "status": "published",
+        "name": "ground_realtime_baseline",
         "description": "每0.5秒由Dify直接决定左右油门和前轮角，无PI代驾",
-        "addendum": "", "created_from": "0.1.0",
-        "regression_report": {"passed": true, "validation_run": "run-54b2b6bae411", "kind": "new_control_protocol_validation"}
+        "addendum": "",
+        "created_from": "0.1.0",
+        "regression_report": {
+          "passed": true,
+          "validation_run": "run-54b2b6bae411",
+          "kind": "new_control_protocol_validation"
+        }
       },
       "0.1.0": {
-        "version": "0.1.0", "status": "superseded", "name": "ground_stage_baseline",
+        "version": "0.1.0",
+        "status": "superseded",
+        "name": "ground_stage_baseline",
         "description": "场景三两阶段Agent工具决策基线，75度右转掉头",
-        "addendum": "", "created_from": null, "regression_report": null
+        "addendum": "",
+        "created_from": null,
+        "regression_report": null
       }
     }
   },
@@ -40,4 +75,3 @@
     }
   }
 }
-

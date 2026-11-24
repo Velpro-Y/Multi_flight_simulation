@@ -19,6 +19,16 @@ from multiflight.simulation.ground_realtime import GroundCorrectionAction, Groun
 P=GroundCorrectionParameters().model_dump()
 
 
+def test_preview_candidate_changes_policy_without_changing_constraints(tmp_path):
+    store=PromptStore(tmp_path/"registry.json");candidate=store.get("ground_direction","0.4.1")
+    assert candidate["status"]=="candidate" and store.get("ground_direction")["version"]=="0.2.0"
+    compiler=PromptCompiler();scene=SceneRegistry().get("ground_direction");context={"normalized_parameters":P}
+    old=compiler.compile(scene,"0.4.0",runtime_context=context)
+    new=compiler.compile(scene,"0.4.1",candidate["addendum"],runtime_context=context)
+    assert new.protected_hash==old.protected_hash and new.prompt_hash!=old.prompt_hash
+    assert "e_pred" in new.text and "0.12" in new.text
+
+
 @pytest.mark.parametrize("fields", [dict(initial_speed_kn=5),dict(initial_speed_kn=float("nan")),
     dict(initial_heading_deg=6),dict(initial_lateral_deviation_ft=81),dict(target_nose_wheel_deg=75)])
 def test_correction_parameters_are_separate_from_turning(fields):
@@ -38,7 +48,7 @@ def test_correction_schema_prompt_and_candidate_do_not_replace_published_turn(tm
     monkeypatch.setattr(api.run_service,"start",lambda *a,**kw:captured.append(kw) or {"id":"test"})
     with TestClient(api.app) as c:
         meta=c.get("/api/scenarios/ground_direction/parameters?experiment=brake_correction").json()
-        assert meta["supported_prompt_versions"]==["0.4.0"]
+        assert meta["supported_prompt_versions"]==["0.4.0","0.4.1"]
         assert meta["parameter_defaults"]==P
         assert c.post("/api/runs",json={"scene_id":"ground_direction","prompt_version":"0.4.0","parameters":P}).status_code==202
         assert captured[-1]["parameters"]==P

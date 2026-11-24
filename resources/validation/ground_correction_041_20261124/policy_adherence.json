@@ -1,0 +1,9 @@
+{
+  "run_id": "run-4f284b827eb5",
+  "reference_policy_source": "scripts/verify_brake_correction_model.py",
+  "analysis_only": true,
+  "max_action_difference": 1.2448815199083048,
+  "steps_error_over_001": 38,
+  "opposite_direction_steps": 19,
+  "note": "Offline diagnostic only. Reference values did not control the Dify simulation."
+}

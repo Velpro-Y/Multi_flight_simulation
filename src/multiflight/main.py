@@ -109,7 +109,8 @@ def start_ground_demo(request: GroundDemoRequest) -> dict[str, Any]:
 def ground_action_schemas() -> dict[str, Any]:
     return {"0.2.0": GroundRealtimeAction.model_json_schema(),
             "0.3.0": GroundBrakeAction.model_json_schema(),
-            "0.4.0": GroundCorrectionAction.model_json_schema()}
+            "0.4.0": GroundCorrectionAction.model_json_schema(),
+            "0.4.1": GroundCorrectionAction.model_json_schema()}
 
 
 @app.get("/health", tags=["system"])
