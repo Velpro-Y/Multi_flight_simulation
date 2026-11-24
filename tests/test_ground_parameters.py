@@ -176,3 +176,28 @@ def test_omitted_parameters_keep_existing_defaults():
     assert RunRequest(scene_id="ground_direction").parameters is None
     assert ParameterRegistry().defaults("ground_direction") == dict(
         initial_speed_kn=0, target_nose_wheel_deg=75, target_heading_change_deg=177, max_simulation_time_s=20)
+
+
+def test_brake_coverage_requires_actual_outputs_and_preserves_step_numbers():
+    import runpy
+    from pathlib import Path
+    coverage = runpy.run_path(str(Path(__file__).resolve().parents[1] / "scripts/verify_ground_parameterized_dify.py"))["brake_coverage"]
+    def record(mode=0, right=0, active=False):
+        return {"raw_action": {"brake_system_mode": mode, "brake_left": 0, "brake_right": right,
+                               "auto_brake_armed": mode == 1},
+                "state_before": {"speed_kn": 5}, "result": {"simulation": {
+                    "brake_system_mode": mode, "brake_left": .15 if active else 0,
+                    "brake_right": .15 if active else right, "auto_brake_active": active,
+                    "on_ground": True, "start_time_s": 0, "time_s": .5, "speed_kn": 4.9}}}
+    records = [record(), record(right=.1), record(mode=1, active=True)]
+    result = coverage(records)
+    assert result["manual_right_exercised"] and result["automatic_exercised"]
+    assert [e["step"] for e in result["events"]] == [2, 3]
+    bad = deepcopy(records)
+    bad[1]["result"]["simulation"]["brake_right"] = 0
+    bad[2]["result"]["simulation"]["auto_brake_active"] = False
+    assert not coverage(bad)["manual_right_exercised"]
+    assert not coverage(bad)["automatic_exercised"]
+    bad = deepcopy(records)
+    bad[2]["result"]["simulation"]["brake_left"] = 0
+    assert not coverage(bad)["automatic_exercised"]

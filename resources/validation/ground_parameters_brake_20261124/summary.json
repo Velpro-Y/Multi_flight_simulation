@@ -1,0 +1,117 @@
+{
+  "run_id": "run-898e6112d853",
+  "status": "succeeded",
+  "parameters": {
+    "initial_speed_kn": 5.0,
+    "target_nose_wheel_deg": 40.0,
+    "target_heading_change_deg": 150.0,
+    "max_simulation_time_s": 20.0
+  },
+  "checks": {
+    "run_succeeded": true,
+    "evaluation_passed": true,
+    "parameters_consistent": true,
+    "initial_speed_applied": true,
+    "one_fresh_call_per_step": true,
+    "prompt_parameters": true,
+    "prompt_hash_matches": true,
+    "manual_right_brake_exercised": true,
+    "automatic_brake_exercised": true
+  },
+  "passed": true,
+  "error": null,
+  "dify": {
+    "mode": "per_step_decision",
+    "decisions": 11,
+    "model_calls": 11,
+    "reused_decisions": 0,
+    "decisions_file": "data\\runs\\run-898e6112d853\\decisions.json"
+  },
+  "final_state": {
+    "flight_phase": "SUCCESS",
+    "time": 5.09,
+    "speed_kn": 5.138241785933187,
+    "heading_deg": 150.35406545096373,
+    "yaw_rate_deg_s": 38.30699713497059,
+    "wheel_deg": 40,
+    "x_m": 2.1709526028926756,
+    "y_m": 7.712325811538776,
+    "roll_deg": -1.1847206841842703,
+    "on_ground": true,
+    "reached_5kn": true,
+    "target_nose_wheel_deg": 40.0,
+    "target_heading_change_deg": 150.0,
+    "max_simulation_time_s": 20.0,
+    "brake_left": 0,
+    "brake_right": 0,
+    "brake_system_mode": 0,
+    "auto_brake_armed": false,
+    "auto_brake_active": false,
+    "steering_limit_deg": 72.5338635604305,
+    "manual_brake_used": true,
+    "auto_brake_used": true
+  },
+  "evaluation": {
+    "scene_id": "ground_direction",
+    "prompt_version": "0.3.0",
+    "prompt_hash": "d09b8df5325feab359387883dda6dfb80d91a5647e2c820a1e178db96d75416d",
+    "passed": true,
+    "hard_gates": {
+      "reset_and_multiple_decisions": true,
+      "format_valid": true,
+      "no_early_steering": true,
+      "state_continuity": true,
+      "state_safe": true,
+      "target_angle_reached": true,
+      "completed": true,
+      "brake_routing_valid": true,
+      "steering_authority_valid": true
+    },
+    "failure_labels": [],
+    "phase_trace": [
+      "READY",
+      "TURN",
+      "SUCCESS"
+    ],
+    "metrics": {
+      "steps": 11,
+      "score": 100.0,
+      "time_s": 5.09,
+      "heading_change_deg": 150.35406545096373,
+      "max_wheel_deg": 40
+    },
+    "parameters": {
+      "initial_speed_kn": 5.0,
+      "target_nose_wheel_deg": 40.0,
+      "target_heading_change_deg": 150.0,
+      "max_simulation_time_s": 20.0
+    },
+    "scope": "Dify逐步决定油门、前轮角及刹车，保留随速限角和互斥自动刹车规则"
+  },
+  "brake_coverage": {
+    "manual_right_exercised": true,
+    "automatic_exercised": true,
+    "events": [
+      {
+        "step": 1,
+        "kind": "manual_right",
+        "start_time_s": 0,
+        "end_time_s": 0.5,
+        "brake_left": 0,
+        "brake_right": 0.35,
+        "speed_before_kn": 5.0,
+        "speed_after_kn": 4.538920885895135
+      },
+      {
+        "step": 2,
+        "kind": "automatic",
+        "start_time_s": 0.5,
+        "end_time_s": 1,
+        "brake_left": 0.15,
+        "brake_right": 0.15,
+        "speed_before_kn": 4.538920885895135,
+        "speed_after_kn": 3.7311853390819243
+      }
+    ]
+  }
+}

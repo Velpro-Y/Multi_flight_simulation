@@ -1,0 +1,53 @@
+{
+  "run_id": "run-898e6112d853",
+  "script": "scripts\\plot_ground_brake.py",
+  "parameters": {
+    "initial_speed_kn": 5.0,
+    "target_nose_wheel_deg": 40.0,
+    "target_heading_change_deg": 150.0,
+    "max_simulation_time_s": 20.0
+  },
+  "source_sha256": {
+    "data\\runs\\run-898e6112d853\\records.json": "4baba803481434baec487fb5e315a8aa350e18ec48ac0604c965291b6c703c48",
+    "data\\runs\\run-898e6112d853\\decisions.json": "edfccf43975e66df4dc781121f036e578795f8d91b988087b2d2fa5f007d6434",
+    "data\\runs\\run-898e6112d853\\evaluation.json": "8ef59ebb8709ccf87d8bf862818c7472ed0b2f2af5a67c7c608118b37b580113",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_001.json": "e33173e96dec53fb1c573ead8fd214f56be3df2107e032d49f41f2b791671555",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_002.json": "5020df7aed046e8ed9f1c05d3d004152ab5d3d1db77e41d247c904e3f2e36f1e",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_003.json": "1957fafb3cd69a6fde81a3c9250d5ca0dcb9d261d43328061a4d5df29833dcbf",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_004.json": "d905556c492f20e0170fb5fb54e46d5c7c797d627b52bf087092c40e26946d9d",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_005.json": "0414f96c5dac34324e98c545b670fa50b201a536ad334244d7176ea8635f8b4d",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_006.json": "2998eafdca420241054b61a7c6382bddd66acbd7a2094ee839049af70215f0d9",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_007.json": "0b08d6c6f90c19e9e6d8011cb3041f21eafe1688ff83185c4d1248541b0057be",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_008.json": "002b5060cd897751780113f274c608b1d973f50d90765e5c8f2b98194c17f7ca",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_009.json": "f4071272f0f472f6fa6223acb5e3bdfcbec4270534ca982f6f31731c1f1f959d",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_010.json": "895921f86d3f5340fdc7d324363eb9d6defe5643adce0ad81946984002d7459f",
+    "data\\runs\\run-898e6112d853\\realtime-8849b7b3\\response_011.json": "d85e52b3d604e0cd673cda8971540566d5e7b9081076b6d85dbd995af5ef9d50"
+  },
+  "source_segments": 11,
+  "sample_rows": 341,
+  "image_metadata": {
+    "pixels": [
+      2880,
+      1710
+    ],
+    "dpi": [
+      180.00979999999998,
+      180.00979999999998
+    ],
+    "mode": "RGBA"
+  },
+  "matplotlib_version": "3.8.4",
+  "transformations": [
+    "Native trajectory segments; no smoothing or resampling",
+    "Raw commands shown as zero-order holds",
+    "Actual wheel angle shown only at step endpoints",
+    "Automatic brake mode highlighted from requested mode"
+  ],
+  "validation": {
+    "layout_review": "OK: visually inspected 2026-11-24; labels, scales, legends and target lines match data",
+    "data_finite": true,
+    "actual_brake_coverage": "Manual right 0.35 at 0–0.5s; automatic 0.15/0.15 at 0.5–1s"
+  },
+  "alt_text": "六联图展示重心轨迹、航向、速度、前轮角、油门和实际刹车指令。5.09秒时航向变化150.35度。刹车曲线为模型归一化指令，灰色区间为自动模式。",
+  "generator_sha256": "443fb5544f7e21a89fd62fc243573acdd90ac40fbb155ef7dc73222c2e7f9a2d"
+}

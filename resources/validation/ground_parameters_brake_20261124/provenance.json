@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-24",
+  "run_id": "run-898e6112d853",
+  "base_commit": "0e0c902",
+  "prompt_version": "0.3.0",
+  "prompt_status": "candidate",
+  "model_calls": 11,
+  "reused_decisions": 0,
+  "tests_passed": 59,
+  "query": "本轮验证参数化刹车闭环：在完成目标转向前，若manual_brake_used=false，依据实时状态选择一次适度的非零右主轮手动刹车，左手动刹车为0，读取实际输出确认；若auto_brake_used=false，切换自动模式并预位，左右手动指令均为0，读取auto_brake_active和左右实际0.15确认。两项累计标记均true后释放刹车并恢复手动模式，继续完成本轮参数指定的右转目标。时机、油门、前轮角和手动刹车大小由你根据每步状态选择，防止刹停。每轮只返回一个七字段动作JSON。",
+  "parameters": {
+    "initial_speed_kn": 5.0,
+    "target_nose_wheel_deg": 40.0,
+    "target_heading_change_deg": 150.0,
+    "max_simulation_time_s": 20.0
+  },
+  "scope": "Single parameterized right-turn functional coverage run; no paired causal performance comparison",
+  "normalization": [
+    "Absolute project artifact paths made relative in JSON copies",
+    "SVG line-end whitespace removed; all coordinates unchanged",
+    "Decisions copy retains observations, parsed actions and source; complete Dify responses stay in local run folder"
+  ],
+  "raw_source_sha256": {
+    "parameterized_dify_verification.json": "681281bc6e8e4de154c599f485161656387c3c8946b5a5e46d3841caec0dd278",
+    "records.json": "4baba803481434baec487fb5e315a8aa350e18ec48ac0604c965291b6c703c48",
+    "compiled_prompt.md": "c783cbb2bd039b8cc03feddd17e786b05a74818d3c285898fb40bc4409fd93a7",
+    "decision_trace.csv": "afbb87610ac5283725bcf2c24da029b1b78f283c37da00b2b65e48093e26a56c",
+    "brake_visualization.png": "c94820ec3d70c4a53608f17ce087d5b129b0757ad87f07b321edfcd2f2d2709d",
+    "brake_visualization.svg": "7b1de8fde67104b67eed7b5d2a8f5e42d65b6ee5511347852031ffea2a0b57c0",
+    "brake_visualization_data.csv": "a3a271d4c7da8ba8ed419ce1652e9c749db801e614607dc0e17a2e3ab0868124",
+    "brake_visualization_manifest.json": "6e05c0be13a7f400bdc4238eb3d7d70bc09f4d37a657082d40e4fe11b2d0be17"
+  },
+  "code_sha256": {
+    "scripts/verify_ground_parameterized_dify.py": "0dd4739932f71a020a833d5674d684b8e2d2f2b767d41361af9bdde25942dbdf",
+    "scripts/plot_ground_brake.py": "443fb5544f7e21a89fd62fc243573acdd90ac40fbb155ef7dc73222c2e7f9a2d",
+    "src/multiflight/simulation/ground_realtime.py": "4c921bd38df6b825c5f38abb3ddef66666f69922f3bfef4f8ce319706543374a"
+  }
+}

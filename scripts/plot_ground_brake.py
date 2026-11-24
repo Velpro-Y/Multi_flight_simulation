@@ -28,6 +28,8 @@ def main():
     records = read(folder / 'records.json')
     decisions = read(folder / 'decisions.json')
     evaluation = read(folder / 'evaluation.json')
+    parameters = evaluation.get('parameters', {})
+    target_heading = parameters.get('target_heading_change_deg', 177)
     steps = [r for r in records if r['kind'] == 'step']
     traces = [read(Path(r['result']['simulation_file'])) for r in steps]
     assert len(steps) == len(decisions) and steps
@@ -44,12 +46,15 @@ def main():
     with plt.rc_context(style):
         fig, grid = plt.subplots(2, 3, figsize=(16, 9.5))
         ax = list(grid.flat)
-        fig.subplots_adjust(left=.065, right=.975, bottom=.14, top=.81,
+        fig.subplots_adjust(left=.065, right=.975, bottom=.14, top=.77 if parameters else .81,
                             wspace=.34, hspace=.48)
-        fig.suptitle('场景三 · 刹车与掉头闭环仿真', x=.055, y=.965,
+        fig.suptitle('场景三 · 刹车与转向闭环仿真', x=.055, y=.965,
                      ha='left', fontsize=24, weight='bold')
         fig.text(.055, .905, f"提示词 v{evaluation['prompt_version']}   ·   {len(decisions)} 次实时决策   ·   手动差动刹车 / 自动刹车",
                  color=grey, fontsize=12)
+        if parameters:
+            fig.text(.055, .855, f"初始地速 {parameters['initial_speed_kn']:g} kn   ·   前轮目标 {parameters['target_nose_wheel_deg']:g}°   ·   航向目标 {target_heading:g}°",
+                     color=grey, fontsize=12)
         for a in ax:
             a.grid(color='#E6E6E6', lw=.7)
             a.set_axisbelow(True)
@@ -82,8 +87,8 @@ def main():
                   ylabel='初始前进方向 Xe (m)')
         ax[0].set_aspect('equal', adjustable='box')
         ax[0].legend(frameon=False, fontsize=10, loc='lower right')
-        ax[1].axhline(177, color=grey, ls=':', label='终止阈值 177°')
-        ax[1].set(title='02  航向变化', ylabel='航向角 (°)', ylim=(-5, 190))
+        ax[1].axhline(target_heading, color=grey, ls=':', label=f'终止阈值 {target_heading:g}°')
+        ax[1].set(title='02  航向变化', ylabel='航向角 (°)', ylim=(-5, max(target_heading, final['heading_deg'])+10))
         ax[1].legend(frameon=False, fontsize=10, loc='lower right')
         ax[2].axhline(5, color=grey, ls=':', label='起转速度 5 kn')
         ax[2].set(title='03  地面速度', ylabel='速度 (kn)')
@@ -107,7 +112,8 @@ def main():
         for r, t0, t1 in zip(steps, start, end):
             if r['raw_action']['brake_system_mode'] == 1:
                 ax[5].axvspan(t0, t1, color='#E5E5E5', zorder=0)
-        ax[5].set(title='06  实际主轮刹车', ylabel='刹车指令 (0–1)', ylim=(-.01, .42))
+        max_brake = max(max(t['trajectory'][k]) for t in traces for k in ['brake_left', 'brake_right'])
+        ax[5].set(title='06  实际主轮刹车指令', ylabel='刹车指令 (0–1)', ylim=(-.01, max(.42, max_brake*1.1)))
         handles, labels = ax[5].get_legend_handles_labels()
         ax[5].legend(handles + [Patch(facecolor='#E5E5E5')],
                      labels + ['自动模式'], frameon=False, fontsize=10, loc='upper right')
@@ -131,6 +137,7 @@ def main():
     with Image.open(stem.with_suffix('.png')) as image:
         metadata = {'pixels': list(image.size), 'dpi': image.info.get('dpi'), 'mode': image.mode}
     manifest = {'run_id': args.run_id, 'script': str(Path(__file__).resolve()),
+                'parameters': parameters,
                 'source_sha256': sources, 'source_segments': len(traces),
                 'sample_rows': len(rows), 'image_metadata': metadata,
                 'matplotlib_version': matplotlib.__version__,
@@ -139,9 +146,9 @@ def main():
                                     'Actual wheel angle shown only at step endpoints',
                                     'Automatic brake mode highlighted from requested mode'],
                 'validation': {'layout_review': 'pending', 'data_finite': True},
-                'alt_text': '六联图展示重心掉头轨迹、航向、速度、前轮角、油门和实际刹车。'
-                            '4至4.5秒右刹车0.35，4.5至5秒自动模式左右各0.15；'
-                            '8.91秒航向变化177.32度，结束时仍在转弯。'}
+                'alt_text': '六联图展示重心轨迹、航向、速度、前轮角、油门和实际刹车指令。'
+                            f"{final['time']:.2f}秒时航向变化{final['heading_deg']:.2f}度。"
+                            '刹车曲线为模型归一化指令，灰色区间为自动模式。'}
     (folder/'brake_visualization_manifest.json').write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
     print(stem.with_suffix('.png'))

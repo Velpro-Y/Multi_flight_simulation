@@ -8,6 +8,8 @@
 
 ## 1. 当前交付基线
 
+同日补充：参数化刹车闭环 `run-898e6112d853` 已完成；0～0.5s右手动刹车0.35，0.5～1s自动刹车左右各0.15，11次新决策在5.09s达到150.35°，9项评估通过。0.3.0仍为候选。代码测试当前59项通过，精简记录在 `resources/validation/ground_parameters_brake_20261124/`。
+
 | 项目 | 当前状态 |
 | --- | --- |
 | 仓库 | `https://github.com/Velpro-Y/Multi_flight_simulation.git` |
